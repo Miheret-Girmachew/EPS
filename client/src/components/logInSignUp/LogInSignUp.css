@@ -1,0 +1,117 @@
+.loginSignUp {
+  text-align: center;
+}
+
+span {
+  color: #fe8402;
+}
+span:hover {
+  text-decoration: underline;
+}
+form {
+  margin-top: 30px;
+}
+
+.form-input input,
+.form-input select {
+  padding: 10px 15px;
+  width: 100%;
+  margin-top: 15px;
+  border-radius: 5px;
+  border: 0.5px solid #cacaca;
+  outline: none;
+  box-sizing: border-box; /* Added to include padding and border in the element's total width and height */
+}
+
+
+.form-input input:focus,
+.form-input select:focus{
+  animation: border-appear 0.2s forwards;
+  
+}
+@keyframes border-appear {
+  from {
+      border-bottom: 2px solid transparent; 
+      width: 0; 
+  }
+  to {
+      border-bottom: 2px solid #ff8500;
+      width: 100%; 
+  } 
+}
+
+.login > div,
+.register > div {
+  padding: 0 10px;
+  font-size: 0.9rem;
+}
+.forgot a {
+  display: block;
+  text-decoration: none;
+  color: #fe8402;
+  text-align: right;
+  margin-top: 15px;
+}
+.forgot a:hover {
+  text-decoration: underline;
+}
+
+.btn-login > button {
+  font-size: 1rem;
+  padding: 5px 10px;
+  width: 100%;
+  border-radius: 5px;
+  border: none;
+  margin-top: 30px;
+  color: white;
+  background-color: #516cf0;
+}
+
+.btn-login > button:hover {
+  background-color: #fe8402;
+}
+.btn-register > button {
+  font-size: 1rem;
+  padding: 5px 10px;
+  width: 100%;
+  border-radius: 5px;
+  border: none;
+  margin-top: 20px;
+  color: white;
+  background-color: #516cf0;
+}
+
+.btn-register > button:hover {
+  background-color: #fe8402;
+}
+.privacy {
+  margin-top: 15px;
+  font-size: 0.7rem;
+  a {
+    color: #fe8402;
+  }
+}
+.password {
+  position: relative;
+}
+.password span {
+  position: absolute;
+  top: 35%;
+  right: 5%;
+  font-size: 1.2rem;
+  color: #848484;
+}
+.password span:hover {
+  color: #fe8402;
+}
+.disabled {
+  cursor: not-allowed;
+}
+.disabled:hover {
+  background-color: #848484 !important;
+}
+
+.error-message {
+  color: red;
+  margin-top: 10px;
+}

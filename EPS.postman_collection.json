@@ -1,0 +1,1082 @@
+{
+	"info": {
+		"_postman_id": "508ada91-8824-4a43-81d2-e143233d2490",
+		"name": "EPS",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "36343945"
+	},
+	"item": [
+		{
+			"name": "user",
+			"item": [
+				{
+					"name": "register",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxMSwiZW1haWwiOiJhZG1pbm5AZXhhbXBsZS5jb20iLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTcyNTIxMDE0OSwiZXhwIjoxNzI1NDY5MzQ5fQ.ZTTBpeSiUEKlSj5eb2ui4NbHGuQllDO6ytIQlgIp7h8",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "\r\n\r\n{\r\n  \"firstName\": \"Mih\",\r\n  \"lastName\": \"Gir\",\r\n  \"email\": \"miherett@gmail.com\",\r\n  \"password\": \"Abc123!@\",\r\n  \"secretQuestion\": \"What was the name of your first school?\",\r\n  \"secretAnswer\": \"Joint\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/users/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "register2",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"firstName\": \"Miheret\",\r\n  \"lastName\": \"Girmachew\",\r\n  \"email\": \"miheretgirmachew@gmail.com\",\r\n  \"password\": \"Abc123!@\",\r\n   \"secretQuestion\": \"What was the name of your first school?\",\r\n  \"secretAnswer\": \"Joint\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/users/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "register admin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"firstName\": \"MihAdmin\",\r\n  \"lastName\": \"GirAdmin\",\r\n  \"email\": \"miheretgirmachew27@gmail.com\",\r\n  \"password\": \"Abc123!@\",\r\n  \"role\": \"1\",\r\n  \"secretQuestion\": \"What was the name of your first school?\",\r\n  \"secretAnswer\": \"Joint\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/users/register",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"users",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjo5LCJlbWFpbCI6Im1paGVyZXRnaXJtYWNoZXcyN0BnbWFpbC5jb20iLCJyb2xlIjoic3R1ZGVudCIsImlhdCI6MTcyNTIwOTYxNywiZXhwIjoxNzI1NDY4ODE3fQ.CrSGwyIz5vPAhxqRJhEMXgmULSioF7Guym0eNTqAFXs",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n   \"email\": \"miherett@gmail.com\",\r\n  \"password\": \"Abc123!@\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/users/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "login2",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"miheretgirmachew@gmail.com\",\r\n  \"password\": \"Abc123!@\"\r\n}\r\n\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/users/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "admin login",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZjJmZGUwNWItMzMyYi00NTk2LWJkNjEtMDc3YWQ3NWYxZGU3IiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjU2ODMwNDcsImV4cCI6MTcyNTk0MjI0N30.7l01CPUzLdznFi5eG1wKL0aBI-9BZHEF23f709g10pI",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"miheretgirmachew27@gmail.com\",\r\n  \"password\": \"Abc123!@\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/users/login",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"users",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get user by id",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYTU0YTNkMGQtMmVhZi00N2YyLTk4YmQtOTNlNTk2OTMwMDBhIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjYwNTExMjMsImV4cCI6MTcyNjMxMDMyM30.VDn2X0fEaKaws_sLO0J7ajs4Zp_pi5j_y5CNo2HluAw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiZjQxM2QxMjYtZjhkNy00Y2QyLWJjMGUtYWFkMDcyYzhmYjE5IiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjUzMTc0MjcsImV4cCI6MTcyNTU3NjYyN30.9bZEhdfcC3W5ws0rYFmrjcWf6B95I7j-gzxwnJrGlGE",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "// Allowed only for admin",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/users/19efdbbe-55ed-4824-b24a-5d3011b7990f",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"users",
+								"19efdbbe-55ed-4824-b24a-5d3011b7990f"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update user",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNTFkNzM2MGItZGIyNS00YTQxLTg0NGUtNjc1YTJmOTBjY2NiIiwiZW1haWwiOiJtaWhlcmV0QGdtYWlsLmNvbSIsInJvbGUiOiIzIiwiaWF0IjoxNzI2MDUxMTE1LCJleHAiOjE3MjYzMTAzMTV9.7pC8nKumiGQeHKWy7KfSuOdP9ZgLqjqpIZlst4b9WBM",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"lastName\": \"Girmaa\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/users/19efdbbe-55ed-4824-b24a-5d3011b7990f",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"users",
+								"19efdbbe-55ed-4824-b24a-5d3011b7990f"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update user by admin",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiYTU0YTNkMGQtMmVhZi00N2YyLTk4YmQtOTNlNTk2OTMwMDBhIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjYwNTExMjMsImV4cCI6MTcyNjMxMDMyM30.VDn2X0fEaKaws_sLO0J7ajs4Zp_pi5j_y5CNo2HluAw",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"visibility\": \"0\"\r\n   // Don't forget to change the visibility to \"1\" for later use of this user.\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/users/vis/19efdbbe-55ed-4824-b24a-5d3011b7990f",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"users",
+								"vis",
+								"19efdbbe-55ed-4824-b24a-5d3011b7990f"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "password reset request",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiOGZlZDQ1YzItMjUxYS00ZWFhLTkwZWYtZmVjYTBjZTM1ODA2IiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3QGdtYWlsLmNvbSIsInJvbGUiOiIzIiwiaWF0IjoxNzI2MDUxNDUxLCJleHAiOjE3MjYzMTA2NTF9.QwP52XVCnhgrgHYo8Bf_7WG_RmdLyLYMWTbrpojlsCA",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"email\": \"miheretgirmachew@gmail.com\",\r\n   \"secretQuestion\": \"What was the name of your first school?\",\r\n  \"secretAnswer\": \"Joint\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/users/request-password-reset",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"users",
+								"request-password-reset"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "reset password",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIseyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZlY2FkMTE2LTZmN2YtNGY1Yy04MDJmLTBkYmJmYTJlMDY1YSIsImlhdCI6MTcyNjExOTc0MSwiZXhwIjoxNzI2MTIzMzQxfQ.e00yHGMJmzjFblxV0k394hrc5L6nZmnzM98OPrjfmhgInR5cCI6IkpXVCJ9.eyJpZCI6IjQzODU1NTM3LTg1NTYtNGFjNi1iMzRhLWZjMWYyNzljMTI1YiIsImlhdCI6MTcyNjA1MDUyOSwiZXhwIjoxNzI2MDU0MTI5fQ.kjJt0KW4rwiIFV4DBFFn9CzFOIdHZCnapU-qoT_g8PU",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"newPassword\": \"NewPassword123!\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/users/reset-password/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZlY2FkMTE2LTZmN2YtNGY1Yy04MDJmLTBkYmJmYTJlMDY1YSIsImlhdCI6MTcyNjExOTc0MSwiZXhwIjoxNzI2MTIzMzQxfQ.e00yHGMJmzjFblxV0k394hrc5L6nZmnzM98OPrjfmhg",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"users",
+								"reset-password",
+								"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZlY2FkMTE2LTZmN2YtNGY1Yy04MDJmLTBkYmJmYTJlMDY1YSIsImlhdCI6MTcyNjExOTc0MSwiZXhwIjoxNzI2MTIzMzQxfQ.e00yHGMJmzjFblxV0k394hrc5L6nZmnzM98OPrjfmhg"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "batch",
+			"item": [
+				{
+					"name": "create batch",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWQ4NmQ5NzYtNmJkYi00M2I1LWI0OWEtMWY4MzlkMDQ3MGJiIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjYxMTk1NzQsImV4cCI6MTcyNjM3ODc3NH0.MMlpzjbsm0rjSXZ6fkOqzHjij2tLuI3YA2yg-_N9o_U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"batchName\": \"nov 2024\",\r\n  \"groups\": [\r\n    { \"groupName\": \"Group 1\", \"instructorName\": \"Rediet\" },\r\n    { \"groupName\": \"Group 2\", \"instructorName\": \"Saron\" }\r\n  ],\r\n  \"instructorNames\": [\"Rediet\", \"Saron\"]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/batches/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"batches",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Batch by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMzY2MGZiMjItOGE1ZS00MWE5LWJjNTAtOThkM2ZlNTVhODgxIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjU4NTU5OTMsImV4cCI6MTcyNjExNTE5M30.mgyqCe-CaHW_CU-7tWxExuA4Y2Vl7Xsi0nyHaXr1kM4",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:7550/api/batches/get/7cc400e7-7d9e-4c39-b695-61cea60794f4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"batches",
+								"get",
+								"7cc400e7-7d9e-4c39-b695-61cea60794f4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get all batches",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWQ4NmQ5NzYtNmJkYi00M2I1LWI0OWEtMWY4MzlkMDQ3MGJiIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjYxMTk1NzQsImV4cCI6MTcyNjM3ODc3NH0.MMlpzjbsm0rjSXZ6fkOqzHjij2tLuI3YA2yg-_N9o_U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:7550/api/batches/all",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"batches",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update batch",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWQ4NmQ5NzYtNmJkYi00M2I1LWI0OWEtMWY4MzlkMDQ3MGJiIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjYxMTk1NzQsImV4cCI6MTcyNjM3ODc3NH0.MMlpzjbsm0rjSXZ6fkOqzHjij2tLuI3YA2yg-_N9o_U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"batchName\": \"Sample Batch\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/batches/update/7cc400e7-7d9e-4c39-b695-61cea60794f4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"batches",
+								"update",
+								"7cc400e7-7d9e-4c39-b695-61cea60794f4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete batch",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWQ4NmQ5NzYtNmJkYi00M2I1LWI0OWEtMWY4MzlkMDQ3MGJiIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjYxMjIxNzAsImV4cCI6MTcyNjM4MTM3MH0.Vz9XvMQD7GeB_HW7QUPn23OYusy4h7tgyBh6Wk_zOv0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:7550/api/batches/delete/7cc400e7-7d9e-4c39-b695-61cea60794f4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"batches",
+								"delete",
+								"7cc400e7-7d9e-4c39-b695-61cea60794f4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add group to batch",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWQ4NmQ5NzYtNmJkYi00M2I1LWI0OWEtMWY4MzlkMDQ3MGJiIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjYxMTk1NzQsImV4cCI6MTcyNjM3ODc3NH0.MMlpzjbsm0rjSXZ6fkOqzHjij2tLuI3YA2yg-_N9o_U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"groupName\": \"Group 7\",\r\n  \"instructorName\": \"Tewedaje\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/batches/add/7cc400e7-7d9e-4c39-b695-61cea60794f4/groups",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"batches",
+								"add",
+								"7cc400e7-7d9e-4c39-b695-61cea60794f4",
+								"groups"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete group",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWQ4NmQ5NzYtNmJkYi00M2I1LWI0OWEtMWY4MzlkMDQ3MGJiIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjYxMTk1NzQsImV4cCI6MTcyNjM3ODc3NH0.MMlpzjbsm0rjSXZ6fkOqzHjij2tLuI3YA2yg-_N9o_U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"groupName\": \"Group 7\",\r\n  \"instructorName\": \"Tewedaje\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/batches/7cc400e7-7d9e-4c39-b695-61cea60794f4/remove/groups",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"batches",
+								"7cc400e7-7d9e-4c39-b695-61cea60794f4",
+								"remove",
+								"groups"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update group",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWQ4NmQ5NzYtNmJkYi00M2I1LWI0OWEtMWY4MzlkMDQ3MGJiIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjYxMTk1NzQsImV4cCI6MTcyNjM3ODc3NH0.MMlpzjbsm0rjSXZ6fkOqzHjij2tLuI3YA2yg-_N9o_U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"groupName\": \"Group 7\",\r\n  \"newGroupName\": \"Updated Group 1\"\r\n}\r\n\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/batches/up/7cc400e7-7d9e-4c39-b695-61cea60794f4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"batches",
+								"up",
+								"7cc400e7-7d9e-4c39-b695-61cea60794f4"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "project",
+			"item": [
+				{
+					"name": "create project by admin",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWQ4NmQ5NzYtNmJkYi00M2I1LWI0OWEtMWY4MzlkMDQ3MGJiIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjYxMTk1NzQsImV4cCI6MTcyNjM3ODc3NH0.MMlpzjbsm0rjSXZ6fkOqzHjij2tLuI3YA2yg-_N9o_U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"projectName\": \"Project 3\",\r\n  \"projectDeadline\": \"2025-12-31\",\r\n  \"batchId\": \"7cc400e7-7d9e-4c39-b695-61cea60794f4\",\r\n  \"visibility\": true\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/projects/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"projects",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get projects",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:7550/api/projects/all",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"projects",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get project by id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:7550/api/projects/projects/2d71c81a-0a67-4832-8db9-ad1fdcee831b",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"projects",
+								"projects",
+								"2d71c81a-0a67-4832-8db9-ad1fdcee831b"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update project by id by student",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWQ4NmQ5NzYtNmJkYi00M2I1LWI0OWEtMWY4MzlkMDQ3MGJiIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjYxMTk1NzQsImV4cCI6MTcyNjM3ODc3NH0.MMlpzjbsm0rjSXZ6fkOqzHjij2tLuI3YA2yg-_N9o_U",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"projectName\": \"netflix\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/projects/update/2d71c81a-0a67-4832-8db9-ad1fdcee831b",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"projects",
+								"update",
+								"2d71c81a-0a67-4832-8db9-ad1fdcee831b"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete project by admin",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWQ4NmQ5NzYtNmJkYi00M2I1LWI0OWEtMWY4MzlkMDQ3MGJiIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjYxMjIxNzAsImV4cCI6MTcyNjM4MTM3MH0.Vz9XvMQD7GeB_HW7QUPn23OYusy4h7tgyBh6Wk_zOv0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/projects/delete/2d71c81a-0a67-4832-8db9-ad1fdcee831b",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"projects",
+								"delete",
+								"2d71c81a-0a67-4832-8db9-ad1fdcee831b"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "project-submission",
+			"item": [
+				{
+					"name": "make project submission by student",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNmVjYWQxMTYtNmY3Zi00ZjVjLTgwMmYtMGRiYmZhMmUwNjVhIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3QGdtYWlsLmNvbSIsInJvbGUiOiIzIiwiaWF0IjoxNzI2MTIxMTg3LCJleHAiOjE3MjYzODAzODd9.flgLVDDm3cHfBF4BfVtbaP1KgwZrjEXCF3qyUgiTsZY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \r\n  \"batchId\": \"7cc400e7-7d9e-4c39-b695-61cea60794f4\",\r\n  \"group\": \"Updated Group 1\",\r\n  \"instructorName\": \"Tewedaje\",\r\n  \"projectId\": \"2d71c81a-0a67-4832-8db9-ad1fdcee831b\",\r\n  \"projectLink\": \"http://example.com/project-link\"\r\n}\r\n\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/project-submissions/create",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"project-submissions",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get project submissions by admin or subadmin",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWQ4NmQ5NzYtNmJkYi00M2I1LWI0OWEtMWY4MzlkMDQ3MGJiIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjYxMjEyODEsImV4cCI6MTcyNjM4MDQ4MX0.jnBD88hdg0ZOwk94OGSOqKUdP8ETRWvri5nnZv_eC_E",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/project-submissions/all",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"project-submissions",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update project submission by student",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNmVjYWQxMTYtNmY3Zi00ZjVjLTgwMmYtMGRiYmZhMmUwNjVhIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3QGdtYWlsLmNvbSIsInJvbGUiOiIzIiwiaWF0IjoxNzI2MTIxMTg3LCJleHAiOjE3MjYzODAzODd9.flgLVDDm3cHfBF4BfVtbaP1KgwZrjEXCF3qyUgiTsZY",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"projectName\": \"Up4 Project Name\",\r\n  \"projectLink\": \"http://example.com/updated-project-link3\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:7550/api/project-submissions/update/17ecbd85-0ffd-4582-bf77-d049e049d1c4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"project-submissions",
+								"update",
+								"17ecbd85-0ffd-4582-bf77-d049e049d1c4"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "delete submission by admin",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNWQ4NmQ5NzYtNmJkYi00M2I1LWI0OWEtMWY4MzlkMDQ3MGJiIiwiZW1haWwiOiJtaWhlcmV0Z2lybWFjaGV3MjdAZ21haWwuY29tIiwicm9sZSI6IjEiLCJpYXQiOjE3MjYxMjIxNzAsImV4cCI6MTcyNjM4MTM3MH0.Vz9XvMQD7GeB_HW7QUPn23OYusy4h7tgyBh6Wk_zOv0",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:7550/api/project-submissions/delete/17ecbd85-0ffd-4582-bf77-d049e049d1c4",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "7550",
+							"path": [
+								"api",
+								"project-submissions",
+								"delete",
+								"17ecbd85-0ffd-4582-bf77-d049e049d1c4"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

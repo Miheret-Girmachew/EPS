@@ -1,0 +1,11 @@
+   .loadingMain{
+    display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+	background-color: #fff;
+   } 
+	img {
+		width: 50px;
+		opacity: 0.8;
+	}

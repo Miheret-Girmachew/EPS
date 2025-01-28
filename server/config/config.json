@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "EPS",
+    "password": "EPS",
+    "database": "eps",
+    "host": "localhost",
+    "dialect": "mysql"
+  },
+  "test": {
+    "username": "root",
+    "password": null,
+    "database": "project_submission_test",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "root",
+    "password": null,
+    "database": "project_submission_production",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  }
+}

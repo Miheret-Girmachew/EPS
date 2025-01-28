@@ -1,0 +1,39 @@
+.headerMain{
+    z-index: 999 !important;
+	width: 100%;
+	height: 85px;
+	background-color: white !important;
+    
+
+}
+.navbar-toggler {
+    border: none;
+}
+
+	img {
+		width: 80%;
+	}
+	.sign {
+		width: 200px;
+		background-color: #516cf0;
+		color: white;
+		border-radius: 5px;
+	}
+	.links a:hover {
+		color: #fe8402;
+	}
+	.sign:hover {
+		background-color: #fe8402;
+	}
+	.log-out {
+		padding-top: 5px;
+		font-size: 1.2rem;
+		color: #411c01;
+		font-weight: bold;
+		/* font-family: monospace; */
+		transition: all 0.5s;
+	}
+	.log-out:hover {
+		cursor: pointer;
+		color: #fe8402;
+	}

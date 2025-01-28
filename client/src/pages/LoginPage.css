@@ -1,0 +1,90 @@
+/* .mainSection {
+    background-repeat: no-repeat;
+    background-size:cover;
+    padding-top: 15%;
+    margin-bottom: 50px;
+    background-image: url("./bg-svg-f.svg");
+    height: 100vh;
+} */
+.mainSection {
+    background-image: url("./bg-svg-f.svg");
+    background-size: cover;
+    background-color: #f8f8f8;
+    /* height: 100vh; */
+    padding-top: 12%;
+    padding-bottom: 50px; /* Added padding at the bottom */
+    min-height: 100vh; /* Ensure the main section is at least the height of the viewport */
+}
+.container{
+    margin-top: 20px; /* added top margin */
+}
+
+.auth {
+    background-color: white;
+    border-radius: 5px;
+    height: auto;
+    min-height: 450px;
+    padding: 15px 30px 25px;
+    max-height: 80vh; /* added max height */
+    overflow-y: auto;
+}
+
+/* Hide scrollbar but keep functionality */
+.auth::-webkit-scrollbar {
+    width: 0;  /* Remove scrollbar space */
+    background: transparent; /* Optional: just make scrollbar invisible */
+}
+
+.auth {
+    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
+}
+
+.text-danger {
+    text-align: center;
+    color: red;
+    font-family: monospace;
+}
+.explained {
+    padding-left: 25px;
+    p:first-child {
+        color: #fe8402;
+        margin-bottom: 5px;
+        font-size: 1.1rem;
+    }
+    h1 {
+        color: #4b456f;
+        font-size: 2.5rem;
+        margin-bottom: 25px;
+    }
+    button {
+        background-color: #fe8402;
+        border: none;
+        color: white;
+        border-radius: 5px;
+        padding: 5px 15px;
+    }
+}
+.CreateNewAcc{
+    color: white;
+    text-decoration: none;
+}
+.CreateNewAcc:hover{
+
+    text-decoration: none;
+}
+
+.text-gradient {
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    position: relative;
+    z-index: 1;
+    background-image: linear-gradient(310deg, #000000, #e33f00);
+}
+@media (max-width: 768px) {
+    .auth {
+        width: 90%;
+        margin: 25px auto;
+    }
+}

@@ -1,0 +1,19 @@
+.notFound{
+    background-color: #fafafa;
+	padding-top: 150px;
+	padding-bottom: 150px;
+}
+.notFound div{
+    margin-left: 20%;
+		margin-right: 20%;
+		max-width: 576px;
+}
+.notFound a{
+    color: #fe8082;
+		text-decoration: none;
+}
+.notFound a:hover{
+    text-decoration: underline;
+}
+
+

@@ -1,0 +1,7 @@
+- header transparency fix 
+- footer overlap on small screen fix
+- input tag selection highlighter line smoothing 
+- the right and left section size increase 
+- transition is kind of fadeout and fade in try that
+- on small screen the text part completely disappears 
+- the burger part should be similar
