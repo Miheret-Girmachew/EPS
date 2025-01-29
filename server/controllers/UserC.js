@@ -20,12 +20,10 @@ const createUser = async (req, res) => {
 
   // Conditional validation based on role
   if (role === "1") {
-    // Skip batch and group validation for admins
     if (!firstName || !lastName || !email || !password || !secretQuestion || !secretAnswer) {
       errors.push('All fields are required');
     }
   } else {
-    // Include batch and group validation for non-admin users
     if (!firstName || !lastName || !email || !password || !secretQuestion || !secretAnswer || !batch || !group) {
       errors.push('All fields are required, including batch and group');
     }
@@ -38,18 +36,12 @@ const createUser = async (req, res) => {
 
   // Validate name
   const nameRegex = /^[A-Za-z]+$/;
-  if (!nameRegex.test(firstName)) {
-    errors.push('First name must contain only letters');
-  }
-  if (!nameRegex.test(lastName)) {
-    errors.push('Last name must contain only letters');
-  }
+  if (!nameRegex.test(firstName)) errors.push('First name must contain only letters');
+  if (!nameRegex.test(lastName)) errors.push('Last name must contain only letters');
 
   // Validate email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    errors.push('Invalid email format');
-  }
+  if (!emailRegex.test(email)) errors.push('Invalid email format');
 
   // Validate password
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -57,14 +49,10 @@ const createUser = async (req, res) => {
     errors.push('Password must contain at least one uppercase letter, one lowercase letter, one special character, and one number');
   }
 
-  // Additional validation for batch and group
+  // Validate batch and group for non-admins
   if (role !== "1") {
-    if (!batch || typeof batch !== 'string') {
-      errors.push('Batch is required and must be a string');
-    }
-    if (!group || typeof group !== 'string') {
-      errors.push('Group is required and must be a string');
-    }
+    if (!batch || typeof batch !== 'string') errors.push('Batch is required and must be a string');
+    if (!group || typeof group !== 'string') errors.push('Group is required and must be a string');
   }
 
   // If there are validation errors, return them
@@ -73,55 +61,44 @@ const createUser = async (req, res) => {
   }
 
   try {
-    // Hash the password and secret answer
+    // Hash password and secret answer
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
     const hashAnswer = await bcrypt.hash(secretAnswer, salt);
 
     // Create the user
-      let user;
-        if (role === '1') {
-          user = await User.create({
-            firstName,
-            lastName,
-            email,
-            password: hashPassword,
-            role,
-            visibility: "1",
-            secretQuestion,
-            secretAnswer: hashAnswer,
-        });
-        } else {
-          user = await User.create({
-            firstName,
-            lastName,
-            email,
-            password: hashPassword,
-            role,
-            visibility: "1",
-            secretQuestion,
-            secretAnswer: hashAnswer,
-            batch, 
-            group,
-          });
-        }
+    let user;
+    if (role === '1') {
+      user = await User.create({
+        firstName, lastName, email, password: hashPassword, role, visibility: "1", secretQuestion, secretAnswer: hashAnswer
+      });
+    } else {
+      user = await User.create({
+        firstName, lastName, email, password: hashPassword, role, visibility: "1", secretQuestion, secretAnswer: hashAnswer, batch, group
+      });
+    }
 
-    // Generate tokens
+    // Generate authentication tokens
     const accessToken = jwt.sign({ user_id: user.userId, email: user.email, role: user.role }, process.env.SECRET_KEY, { expiresIn: '15m' });
     const refreshToken = jwt.sign({ user_id: user.userId, email: user.email, role: user.role }, process.env.REFRESH_SECRET_KEY, { expiresIn: '7d' });
 
-    // Store the refresh token
+    // Store the refresh token in the user record
     user.refreshToken = refreshToken;
     await user.save();
 
-    // Set the Authorization header and return the tokens
-    res.setHeader('Authorization', `Bearer ${accessToken}`);
-    res.json({ accessToken, refreshToken });
+    // Send JSON response with tokens and user details
+    return res.json({
+      message: "User created successfully",
+      user: { userId: user.userId, role: user.role },
+      accessToken,
+      refreshToken
+    });
   } catch (err) {
     console.error('Error creating user:', err.message);
-    res.status(500).json({ message: 'Internal Server Error', error: err.message });
+    return res.status(500).json({ message: 'Internal Server Error', error: err.message });
   }
 };
+
 
 
 
@@ -296,88 +273,142 @@ const requestPasswordReset = async (req, res) => {
 
     // Send the password reset email
     const sendEmail = () => {
-      const updateLink = `http://localhost:5173/api/users/reset-password/${resetToken}`;
-      let mailSender = nodemailer.createTransport({
-        service: 'gmail',
-        port: 465,
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
+      const updateLink = `http://localhost:5173/reset-password/${resetToken}`;
+       let mailSender = nodemailer.createTransport({
+         service: 'gmail',
+         port: 465,
+           auth: {
+               user: process.env.EMAIL_USER,
+               pass: process.env.EMAIL_PASS,
+         },
       });
 
-      let details = {
-        from: process.env.EMAIL_USER,
-        to: user.email,
-        subject: 'Password Reset Request',
-        html: `
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Update Password</title>
-              <style>
-                  body {
-                      font-family: Arial, sans-serif;
-                      background-color: #f6f6f6;
-                      margin: 0;
-                      padding: 0;
-                  }
-                  .container {
-                      max-width: 600px;
-                      margin: 0 auto;
-                      background-color: #ffffff;
-                      padding: 20px;
-                      border-radius: 8px;
-                      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                      border: 1px solid #cccccc;
-                  }
-                  .content {
-                      text-align: center;
-                      padding: 20px;
-                  }
-                  .cta-button {
-                      display: inline-block;
-                      padding: 15px 25px;
-                      margin: 20px 0;
-                      background-color: #d3d3d3;
-                      color: #ffffff;
-                      font-weight: bold;
-                      text-decoration: none;
-                      border-radius: 5px;
-                  }
-              </style>
-          </head>
-          <body>
-              <div class="container">
-                  <div class="content">
-                      <h1>Update your password</h1>
-                      <p>Click the button below to update your password.</p>
-                      <a href="${updateLink}" class="cta-button">Update Password</a>
-                  </div>
-              </div>
-          </body>
-          </html>
-        `
-      };
+         console.log("Email configuration:", {
+             service: 'gmail',
+             port: 465,
+           auth: {
+               user: process.env.EMAIL_USER,
+               pass: process.env.EMAIL_PASS,
+           },
+         });
 
-      mailSender.sendMail(details, (err, info) => {
-        if (err) {
-          console.log('Error sending email:', err);
-          res.status(500).json({ message: 'Error sending email' });
-        } else {
-          console.log('Email sent:', info.response);
-          res.status(200).json({ message: 'Password reset email sent' });
-        }
-      });
-    };
+         let details = {
+            from: process.env.EMAIL_USER,
+            to: user.email,
+           subject: 'Password Reset Request',
+           html: `
+                <!DOCTYPE html>
+                <html lang="en">
+                 <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                     <title>Update Password</title>
+                       <style>
+                         body {
+                              font-family: Arial, sans-serif;
+                              background-color: #f6f6f6;
+                             margin: 0;
+                             padding: 0;
+                         }
+                         .container {
+                               max-width: 600px;
+                               margin: 0 auto;
+                                background-color: #ffffff;
+                               padding: 20px;
+                               borderRadius: 8px;
+                               box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                              border: 1px solid #cccccc;
+                           }
+                         .content {
+                             text-align: center;
+                           padding: 20px;
+                       }
+                       .cta-button {
+                           display: inline-block;
+                           padding: 15px 25px;
+                             margin: 20px 0;
+                             background-color: #d3d3d3;
+                             color: #ffffff;
+                            font-weight: bold;
+                             text-decoration: none;
+                             border-radius: 5px;
+                           }
+                     </style>
+                 </head>
+                 <body>
+                       <div class="container">
+                           <div class="content">
+                               <h1>Update your password</h1>
+                                  <p>Click the button below to update your password.</p>
+                                <a href="${updateLink}" class="cta-button">Update Password</a>
+                           </div>
+                      </div>
+                 </body>
+              </html>
+            `
+           };
 
-    sendEmail();
+
+           mailSender.sendMail(details, (err, info) => {
+            if (err) {
+               console.log('Error sending email:', err);
+              console.log('Email sending error details:', {
+                details,
+               processEnv: { ...process.env }, // Include the env variable for debugging purposes
+                  });
+            res.status(500).json({ message: 'Error sending email' });
+            } else {
+               console.log('Email sent:', info.response);
+                res.status(200).json({ message: 'Password reset email sent' });
+             }
+          });
+       };
+
+       sendEmail();
   } catch (err) {
     console.error('Error in requestPasswordReset:', err);
     res.status(500).json({ message: 'Internal Server Error', error: err.message });
   }
+};
+
+const sendTestEmail = (req, res) => {
+  let mailSender = nodemailer.createTransport({
+    service: 'gmail',
+    port: 465,
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+  console.log("Email test configuration:", {
+         service: 'gmail',
+         port: 465,
+         auth: {
+           user: process.env.EMAIL_USER,
+           pass: process.env.EMAIL_PASS,
+         },
+     });
+
+  let details = {
+    from: process.env.EMAIL_USER,
+    to: 'test@example.com', // Use your email for testing
+    subject: 'Test Email',
+    text: 'This is a test email.',
+  };
+
+    mailSender.sendMail(details, (err, info) => {
+        if (err) {
+           console.log('Error sending test email:', err);
+            console.log('Test Email sending error details:', {
+              details,
+             processEnv: { ...process.env }, // Include the env variable for debugging purposes
+              });
+              res.status(500).json({ message: 'Error sending test email' });
+        } else {
+            console.log('Test email sent:', info.response);
+             res.status(200).json({ message: 'Test email sent successfully!' });
+        }
+    });
 };
 
 const getAllStudents = async (req, res) => {
