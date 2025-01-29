@@ -43,7 +43,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    // New fields for batch and group
     batch: {
       type: DataTypes.STRING,
       allowNull: true,

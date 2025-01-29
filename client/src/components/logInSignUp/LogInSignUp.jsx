@@ -35,56 +35,76 @@ function LogInSignUp() {
         'What was the name of your first school?'
       ];
 
-    useEffect(() => {
-    const fetchBatches = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/api/batches/all');
-        if (!response.ok) {
-            const message = `HTTP error! Status: ${response.status}`;
-            console.error(message);
-             // Log detailed response if there's a JSON body
-             try {
-                const errorData = await response.json();
-                console.error("Response Body: ", errorData)
-              } catch(jsonError) {
-                console.error("Failed to parse JSON error body", jsonError)
-            }
-            throw new Error(message);
-        }
-        const data = await response.json();
-         // Check if data is an object and has a 'batches' property, or an array
-        const batchesData = Array.isArray(data) ? data : (data.batches || []);
-        console.log("Fetched Batches:", batchesData);
-        setBatches(batchesData);
-      } catch (error) {
-         console.error("Error fetching batches:", error);
-         setBatches([]);
-      }
-    };
-
-    fetchBatches();
-  }, []);
-
-
-  useEffect(() => {
-      const fetchGroups = async () => {
-          if (formDataRegister.batch) {
+      useEffect(() => {
+        const fetchBatches = async () => {
           try {
-          const response = await fetch(`http://localhost:8080/api/batches/${formDataRegister.batch}/groups`);
+            const response = await fetch('http://localhost:7550/api/batches/all');
             if (!response.ok) {
-            throw new Error(`Failed to fetch groups: ${response.status}`);
+              const message = `HTTP error! Status: ${response.status}`;
+              console.error(message);
+              try {
+                const errorData = await response.json();
+                console.error("Response Body: ", errorData);
+              } catch (jsonError) {
+                console.error("Failed to parse JSON error body", jsonError);
+              }
+              throw new Error(message);
+            }
+            const data = await response.json();
+            const batchesData = Array.isArray(data) ? data : (data.batches || []);
+            console.log("Fetched Batches:", batchesData);
+            setBatches(batchesData);
+          } catch (error) {
+            console.error("Error fetching batches:", error);
+            setBatches([]);
           }
-          const data = await response.json();
-          setGroups(data);
-         } catch (error) {
-          console.error("Error fetching groups:", error);
-        }
-        } else {
-          setGroups([]);
-        }
-    };
-    fetchGroups();
-  }, [formDataRegister.batch]);
+        };
+      
+        fetchBatches();
+      }, []); // Only runs once when the component mounts
+      
+      useEffect(() => {
+        const fetchGroups = async () => {
+          if (formDataRegister.batch) {
+            try {
+              // Fetch groups for the selected batch
+              const response = await fetch(`http://localhost:7550/api/batches/${formDataRegister.batch}/groups`);
+      
+              if (!response.ok) {
+                throw new Error(`Failed to fetch groups: ${response.status}`);
+              }
+      
+              const contentType = response.headers.get("Content-Type");
+      
+              // Check if the response is JSON
+              if (contentType && contentType.includes("application/json")) {
+                const data = await response.json();
+      
+                // Parse groups if they are in a stringified JSON format
+                const groups = Array.isArray(data.groups) ? data.groups : JSON.parse(data.groups);
+      
+                // Update the state with the groups for the selected batch
+                setGroups(groups);
+              } else {
+                // If not JSON, log the response body (or handle accordingly)
+                const text = await response.text();
+                console.error("Expected JSON, but got:", text);
+                setGroups([]); // Set groups to empty if the response is not in expected format
+              }
+            } catch (error) {
+              console.error("Error fetching groups:", error);
+              setGroups([]); // Set groups to empty on error
+            }
+          } else {
+            // Reset groups when no batch is selected
+            setGroups([]);
+          }
+        };
+      
+        fetchGroups();
+      }, [formDataRegister.batch]); // Dependency on selected batch
+      
+
 
   const handleLoginInputChange = (e) => {
     const { name, value } = e.target;
@@ -101,7 +121,7 @@ function LogInSignUp() {
     setLoginError("");
 
     try {
-      const response = await fetch("http://localhost:8080/api/login", {
+      const response = await fetch("http://localhost:7550/api/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -115,9 +135,7 @@ function LogInSignUp() {
       }
 
       const data = await response.json();
-      // Store the token and user data as needed.
       localStorage.setItem("token", data.token);
-        // Reset the form fields
       setFormDataLogin({email:"",password:""});
        switch (data.user.role) {
         case '1':
@@ -145,7 +163,7 @@ function LogInSignUp() {
     setRegisterError("");
 
     try {
-        const response = await fetch("http://localhost:8080/api/register", {
+        const response = await fetch("http://localhost:7550/api/register", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -155,7 +173,7 @@ function LogInSignUp() {
       if (!response.ok) {
         const errorData = await response.json();
           if (errorData.errors) {
-          setRegisterError(errorData.errors.join(". ")) // Join errors into a single string
+          setRegisterError(errorData.errors.join(". ")) 
             
         } else {
           throw new Error(errorData.message || `Failed to register user with status ${response.status}`);
