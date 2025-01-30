@@ -2,14 +2,13 @@ const {Project, ProjectSubmission, User } = require('../models');
 
 const createProjectSubmission = async (req, res) => {
   try {
-    const { batch_id, group, project_id, github_link, deployment_link } = req.body;
+    const { project_id, github_link, deployment_link } = req.body;
     const userId = req.user.user_id;
 
-console.log('User ID from token:', userId);
-
+    console.log('User ID from token:', userId);
 
     // Validate required fields
-    if (!userId || !batch_id || !group || !project_id || !github_link || !deployment_link) {
+    if (!userId || !project_id || !github_link || !deployment_link) {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -20,7 +19,6 @@ console.log('User ID from token:', userId);
     }
     console.log('Fetched project:', project);
 
-
     const currentDate = new Date();
     if (currentDate > new Date(project.projectDeadline)) {
       return res.status(403).json({ message: 'The deadline for this project has passed. Submission not allowed.' });
@@ -29,28 +27,26 @@ console.log('User ID from token:', userId);
     // Create the project submission
     const newSubmission = await ProjectSubmission.create({
       user_id: userId,
-      batch_id,
-      group,
       project_id,
       github_link,
       deployment_link,
       visibility: true,
     });
 
+    let plagiarismResponse;
     try {
       plagiarismResponse = await submitProjectForPlagiarismCheck(userId, github_link);
     } catch (error) {
       console.error('Plagiarism check error:', error);
       plagiarismResponse = { error: 'Plagiarism check failed' };
     }
-    
+
     // Respond with the new submission and plagiarism check result
     res.status(201).json({ newSubmission, plagiarismResponse });
-    
 
   } catch (error) {
     console.error('Detailed error:', error);
-  
+
     // Log specific Sequelize validation errors
     if (error.name === 'SequelizeValidationError') {
       const validationErrors = error.errors.map(e => ({
@@ -61,30 +57,24 @@ console.log('User ID from token:', userId);
       console.log('Validation errors:', validationErrors);
       console.error('Detailed error:', JSON.stringify(error, null, 2));
 
-  
-      return res.status(500).json({ 
-        message: 'Failed to create project submission due to validation error', 
+      return res.status(500).json({
+        message: 'Failed to create project submission due to validation error',
         errors: validationErrors
       });
     } else if (error.response && error.response.data) {
       // Log Plagiarism API specific errors
-      return res.status(500).json({ 
-        message: 'Plagiarism API error', 
+      return res.status(500).json({
+        message: 'Plagiarism API error',
         error: error.response.data
       });
     } else {
-      return res.status(500).json({ 
-        message: 'Failed to create project submission', 
-        error: error.message 
+      return res.status(500).json({
+        message: 'Failed to create project submission',
+        error: error.message
       });
     }
   }
 }
-
-
-
-
-
 
 
 const getProjectSubmissions = async (req, res) => {

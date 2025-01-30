@@ -16,9 +16,8 @@
 
 // export default App;
 
-
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import InstructorDashboard from './pages/InstructorDashboard';
@@ -29,25 +28,29 @@ import Footer from "./components/Footer/Footer.jsx";
 import NotFound from "./components/notFound/NotFound";
 
 function App() {
+  const location = useLocation();
+  const isLoginPage = location.pathname === '/';
+
   return (
     <>
-      <Header />
+      {isLoginPage && <Header />}
       <main className="min-h-screen">
         <Routes>
           <Route path="/" element={<LoginPage />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/instructor" element={<InstructorDashboard />} />
           <Route path="/student" element={<StudentDashboard />} />
-           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
-       </main>
-        <Footer />
+      </main>
+      {isLoginPage && <Footer />}
     </>
   );
 }
 
 export default App;
+
 
 
 
