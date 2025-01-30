@@ -10,11 +10,14 @@ const {
 const router = express.Router();
 const authenticateToken = require('../middleware/authenticateToken');
 
+router.post('/create', authenticateToken, (req, res, next) => {
+  console.log("Route /create called");
+  next();
+}, createProjectSubmission);
 
-router.post('/create', authenticateToken, createProjectSubmission);
-router.get('/all',authenticateToken, getProjectSubmissions);
+router.get('/all', authenticateToken, getProjectSubmissions);
 router.get('/allprojects', getAllProjectSubmissions);
-router.patch('/update/:id',updateProjectSubmissionById);
+router.patch('/update/:id', updateProjectSubmissionById);
 router.delete('/delete/:id', authenticateToken, deleteProjectSubmissionById);
 
 module.exports = router;

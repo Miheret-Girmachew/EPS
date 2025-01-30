@@ -1,80 +1,129 @@
-const {Project, ProjectSubmission, User } = require('../models');
+const { Project, ProjectSubmission, User } = require('../models');
 
 const createProjectSubmission = async (req, res) => {
   try {
-    const { project_id, github_link, deployment_link } = req.body;
-    const userId = req.user.user_id;
+    console.log("createProjectSubmission function called");
 
-    console.log('User ID from token:', userId);
+    // Log the full request body for debugging
+    console.log("Received request body:", req.body);
+
+    // Log the authenticated user information
+    console.log("User from req.user:", req.user);
+
+    // Extracting user_id from authenticated user
+    const { user_id } = req.user; // Ensure user_id is set in JWT payload
+
+    // Log the extracted user_id
+    console.log("Extracted user_id from req.user:", user_id);
+
+    // Extract fields from request body
+    const { batch_id, project_id, github_link, deployment_link, group } = req.body;
+
+    // Log extracted fields
+    console.log("Extracted fields:");
+    console.log("user_id:", user_id);
+    console.log("batch_id:", batch_id);
+    console.log("project_id:", project_id);
+    console.log("github_link:", github_link);
+    console.log("deployment_link:", deployment_link);
+    console.log("group:", group);
 
     // Validate required fields
-    if (!userId || !project_id || !github_link || !deployment_link) {
-      return res.status(400).json({ message: 'All fields are required' });
+    if (!user_id || !batch_id || !project_id || !github_link || !deployment_link || !group) {
+      console.error("Missing fields:", {
+        user_id,
+        batch_id,
+        project_id,
+        github_link,
+        deployment_link,
+        group
+      });
+      return res.status(400).json({ message: "All fields are required" });
     }
 
     // Fetch the project and validate the deadline
+    console.log("Fetching project with ID:", project_id);
     const project = await Project.findOne({ where: { projectId: project_id } });
+
     if (!project) {
-      return res.status(404).json({ message: 'Project not found' });
+      console.error("Project not found for ID:", project_id);
+      return res.status(404).json({ message: "Project not found" });
     }
-    console.log('Fetched project:', project);
+
+    console.log("Fetched project:", project);
 
     const currentDate = new Date();
+    console.log("Current date:", currentDate);
+    console.log("Project deadline:", project.projectDeadline);
     if (currentDate > new Date(project.projectDeadline)) {
-      return res.status(403).json({ message: 'The deadline for this project has passed. Submission not allowed.' });
+      console.error("Deadline has passed for project:", project.projectDeadline);
+      return res.status(403).json({
+        message: "The deadline for this project has passed. Submission not allowed."
+      });
+    }
+
+    // Check if the user has already submitted for this project
+    console.log("Checking for existing submission for user:", user_id, "and project:", project_id);
+    const existingSubmission = await ProjectSubmission.findOne({
+      where: { user_id, project_id }
+    });
+
+    if (existingSubmission) {
+      console.error("Duplicate submission detected for user:", user_id);
+      return res.status(409).json({
+        message: "You have already submitted this project."
+      });
     }
 
     // Create the project submission
+    console.log("Creating new project submission");
     const newSubmission = await ProjectSubmission.create({
-      user_id: userId,
+      user_id,
+      batch_id,
       project_id,
       github_link,
       deployment_link,
-      visibility: true,
+      group,
+      visibility: true
     });
 
-    let plagiarismResponse;
-    try {
-      plagiarismResponse = await submitProjectForPlagiarismCheck(userId, github_link);
-    } catch (error) {
-      console.error('Plagiarism check error:', error);
-      plagiarismResponse = { error: 'Plagiarism check failed' };
-    }
+    console.log("Project submitted successfully:", newSubmission);
 
-    // Respond with the new submission and plagiarism check result
-    res.status(201).json({ newSubmission, plagiarismResponse });
+    // Respond with the new submission
+    return res.status(201).json({
+      message: "Project submitted successfully!",
+      newSubmission
+    });
 
   } catch (error) {
-    console.error('Detailed error:', error);
+    console.error("Detailed error:", error);
 
-    // Log specific Sequelize validation errors
-    if (error.name === 'SequelizeValidationError') {
+    // Handle Sequelize validation errors
+    if (error.name === "SequelizeValidationError") {
       const validationErrors = error.errors.map(e => ({
         message: e.message,
-        path: e.path,         // Field causing the error
-        type: e.type          // Type of validation error
+        field: e.path,
+        type: e.type
       }));
-      console.log('Validation errors:', validationErrors);
-      console.error('Detailed error:', JSON.stringify(error, null, 2));
 
-      return res.status(500).json({
-        message: 'Failed to create project submission due to validation error',
+      return res.status(400).json({
+        message: "Validation error",
         errors: validationErrors
       });
-    } else if (error.response && error.response.data) {
-      // Log Plagiarism API specific errors
-      return res.status(500).json({
-        message: 'Plagiarism API error',
-        error: error.response.data
+    } else if (error.name === "SequelizeForeignKeyConstraintError") {
+      return res.status(400).json({
+        message: "Foreign key constraint error. Make sure user, batch, and project exist.",
+        error: error.message
       });
     } else {
       return res.status(500).json({
-        message: 'Failed to create project submission',
+        message: "Failed to create project submission",
         error: error.message
       });
     }
   }
-}
+};
+
 
 
 const getProjectSubmissions = async (req, res) => {

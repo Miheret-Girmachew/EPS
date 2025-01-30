@@ -72,7 +72,6 @@ const StudentDashboard = () => {
                key={index}
                 className="w-full h-full bg-cover bg-center"
             >
-              {console.log("Image URL:", image.src)}
               <div className="w-full h-full flex flex-col justify-center items-center bg-opacity-40  p-12">
                    <h2 className="text-5xl font-bold text-[#ff8500]">{image.title}</h2>
                    <p className="mt-4 text-[#ff8500] font-[800]">{image.description}</p>
