@@ -26,6 +26,7 @@ import Dashboard from './pages/Dashboard';
 import Header from "./components/Header/Header.jsx";
 import Footer from "./components/Footer/Footer.jsx";
 import NotFound from "./components/notFound/NotFound";
+import SubmittedProjects from './pages/SubmittedProjects.jsx';
 
 function App() {
   const location = useLocation();
@@ -40,6 +41,7 @@ function App() {
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/instructor" element={<InstructorDashboard />} />
           <Route path="/student" element={<StudentDashboard />} />
+          <Route path="/submitted-projects" element={<SubmittedProjects />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

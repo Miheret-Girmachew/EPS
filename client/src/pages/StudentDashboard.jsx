@@ -45,7 +45,7 @@ const StudentDashboard = () => {
 
   return (
         <div
-            className="bg-cover bg-center text-white rounded-b-3xl overflow-hidden"
+            className="bg-cover bg-center text-white overflow-hidden"
            style={{ backgroundImage: `url(${images[currentImageIndex].src})` }}
       >
     

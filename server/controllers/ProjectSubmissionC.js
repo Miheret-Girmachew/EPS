@@ -193,57 +193,100 @@ const getAllProjectSubmissions = async (req, res) => {
 
 const updateProjectSubmissionById = async (req, res) => {
   try {
+    console.log("updateProjectSubmissionById function called");
+
+    // Extract authenticated user ID
+    const { user_id } = req.user;  // Ensure user_id is set in JWT payload
+    console.log("Authenticated user ID:", user_id);
+
+    // Extract submission ID from params
     const { id: submissionId } = req.params;
+    console.log("Submission ID from params:", submissionId);
+
+    // Extract fields from request body
     const { projectName, github_link, deployment_link } = req.body;
-   
+    console.log("Received fields:", { projectName, github_link, deployment_link });
+
+    // Validate required fields
+    if (!projectName || !github_link || !deployment_link) {
+      console.error("Missing fields:", { projectName, github_link, deployment_link });
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
     // Find the submission
     const submission = await ProjectSubmission.findOne({ where: { psi_id: submissionId } });
 
     if (!submission) {
-      return res.status(404).json({ message: 'Project submission not found' });
+      console.error("Project submission not found for ID:", submissionId);
+      return res.status(404).json({ message: "Project submission not found" });
+    }
+
+    console.log("Fetched submission:", submission);
+
+    // Ensure only the owner can update their submission
+    if (submission.user_id !== user_id) {
+      console.error("Unauthorized update attempt by user:", user_id);
+      return res.status(403).json({ message: "You do not have permission to update this submission" });
     }
 
     // Fetch the project to check the deadline
     const project = await Project.findOne({ where: { projectId: submission.project_id } });
 
     if (!project) {
-      return res.status(404).json({ message: 'Project not found' });
+      console.error("Project not found for ID:", submission.project_id);
+      return res.status(404).json({ message: "Project not found" });
     }
 
-    // Check if the update is being made before the deadline
+    console.log("Fetched project:", project);
+
+    // Validate deadline
     const currentDate = new Date();
     if (currentDate > new Date(project.projectDeadline)) {
-      return res.status(403).json({ message: 'The deadline for this project has passed. Update not allowed.' });
+      console.error("Project deadline has passed. Update not allowed.");
+      return res.status(403).json({ message: "The deadline for this project has passed. Update not allowed." });
     }
 
-    // Ensure only students can update their own submissions
-    // if (req.user.role !== '3') {
-    //   return res.status(403).json({ message: 'Only students can update their own submissions' });
-    // }
-
-    // if (submission.user_id !== userId) {
-    //   return res.status(403).json({ message: 'You do not have permission to update this submission' });
-    // }
-
+    // Enforce edit count limit
     if (submission.edit_count >= 2) {
-      return res.status(403).json({ message: 'You have reached the maximum number of edits for this submission' });
+      console.error("Edit limit reached for submission ID:", submissionId);
+      return res.status(403).json({ message: "You have reached the maximum number of edits for this submission" });
     }
 
-    // Proceed to update the fields
-    submission.project_name = projectName || submission.project_name;
-    submission.github_link = github_link || submission.github_link;
-    submission.deployment_link = deployment_link || submission.deployment_link;
-    submission.edit_count += 1;
+    // Update submission fields
+    submission.project_name = projectName;
+    submission.github_link = github_link;
+    submission.deployment_link = deployment_link;
+    submission.edit_count += 1; // Increment edit count
 
     await submission.save();
 
-    res.status(200).json({ message: 'Project submission updated successfully', submission });
+    console.log("Project submission updated successfully:", submission);
+
+    return res.status(200).json({ message: "Project submission updated successfully", submission });
+
   } catch (error) {
-    console.error('Failed to update project submission:', error);
-    res.status(500).json({ message: 'Failed to update project submission', error: error.message });
+    console.error("Failed to update project submission:", error);
+
+    if (error.name === "SequelizeValidationError") {
+      const validationErrors = error.errors.map(e => ({
+        message: e.message,
+        field: e.path,
+        type: e.type
+      }));
+
+      return res.status(400).json({
+        message: "Validation error",
+        errors: validationErrors
+      });
+    } else {
+      return res.status(500).json({
+        message: "Failed to update project submission",
+        error: error.message
+      });
+    }
   }
 };
+
 
 
 

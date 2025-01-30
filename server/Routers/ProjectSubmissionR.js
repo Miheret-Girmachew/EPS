@@ -17,7 +17,7 @@ router.post('/create', authenticateToken, (req, res, next) => {
 
 router.get('/all', authenticateToken, getProjectSubmissions);
 router.get('/allprojects', getAllProjectSubmissions);
-router.patch('/update/:id', updateProjectSubmissionById);
+router.patch('/update/:id',authenticateToken, updateProjectSubmissionById);
 router.delete('/delete/:id', authenticateToken, deleteProjectSubmissionById);
 
 module.exports = router;
