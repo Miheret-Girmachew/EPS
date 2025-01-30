@@ -121,7 +121,7 @@ const SubmittedProjects = () => {
     return (
         <div className="min-h-screen relative bg-cover bg-center" style={{ backgroundImage: `url('/background.jpg')` }}>
             <ToastContainer />
-            <div className="absolute inset-0 bg-black opacity-80"></div>
+            <div className="absolute inset-0 bg-black"></div>
             <div className="relative p-8 text-white z-10">
                 <div className="container mx-auto">
                     <div className="flex justify-between items-center mb-6">
