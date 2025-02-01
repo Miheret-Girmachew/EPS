@@ -14,6 +14,7 @@
     "axios": "^1.4.0",
     "bootstrap": "^5.3.0",
     "jwt-decode": "^4.0.0",
+    "lucide-react": "^0.474.0",
     "popper.js": "^1.16.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

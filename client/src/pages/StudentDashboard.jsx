@@ -25,10 +25,10 @@ const StudentDashboard = () => {
       const navigate = useNavigate();
 
 
-    const handleLogout = () => {
-       localStorage.removeItem("token");
-        navigate("/");
-    };
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/", { replace: true }); // Use replace:true for logout
+  };
 
     const handleShowSubmitProjectPopUp = () => {
         setShowSubmitProjectPopUp(true);
@@ -45,7 +45,7 @@ const StudentDashboard = () => {
 
   return (
         <div
-            className="bg-cover bg-center text-white overflow-hidden"
+            className="bg-cover bg-center text-white  overflow-hidden"
            style={{ backgroundImage: `url(${images[currentImageIndex].src})` }}
       >
     

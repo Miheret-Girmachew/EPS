@@ -1,4 +1,5 @@
 const { User } = require('../models');
+const { Batch } = require("../models"); // Adjust the path based on your project structure
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
@@ -202,48 +203,77 @@ const updateUserById = async (req, res) => {
 
 const updateUserVisibilityByAdmin = async (req, res) => {
   const { id } = req.params;
-  const { visibility, role } = req.body; // Destructure role from the request body
+  const { visibility, role } = req.body; // Get role from request
 
   try {
     // Check if the logged-in user is an admin
     if (req.user.role !== "1") {
-      return res.status(403).json({ message: 'Only admins can update user visibility and role' });
+      return res.status(403).json({ message: "Only admins can update user visibility and role" });
     }
 
     let user = await User.findOne({ where: { userId: id } });
 
     if (user) {
+      // Store previous role to check if role changes
+      const previousRole = user.role;
+
       // Update visibility if provided
       if (visibility !== undefined) {
-        if (visibility === "0" || visibility === "1" || visibility === "2") {
+        if (["0", "1", "2"].includes(visibility)) {
           user.visibility = visibility;
         } else {
-          return res.status(400).json({ message: 'Invalid visibility value' });
+          return res.status(400).json({ message: "Invalid visibility value" });
         }
       }
 
       // Update role if provided
       if (role !== undefined) {
-        if (role === "1" || role === "2" || role === "3") {
-          user.role = role; // Assuming 1: Admin, 2: Instructor, 3: Student
+        if (["1", "2", "3"].includes(role)) {
+          user.role = role;
         } else {
-          return res.status(400).json({ message: 'Invalid role value' });
+          return res.status(400).json({ message: "Invalid role value" });
         }
       }
 
       // Save the updated user details
       await user.save();
-      await user.reload(); // Reload to get updated values
+      await user.reload();
 
-      res.status(200).json({ message: 'User visibility and/or role updated successfully', user });
+      // Check if role changed and update instructorNames in Batch
+      if (previousRole !== role) {
+        if (role === "2") {
+          // Add user to instructorNames
+          await Batch.update(
+            {
+              instructorNames: Sequelize.fn("JSON_ARRAY_APPEND", Sequelize.col("instructorNames"), "$", user.first_name + " " + user.last_name)
+            },
+            {
+              where: { user_id: id }
+            }
+          );
+        } else if (previousRole === "2") {
+          // Remove user from instructorNames when changed from instructor
+          let batches = await Batch.findAll({ where: { user_id: id } });
+
+          for (let batch of batches) {
+            let instructors = JSON.parse(batch.instructorNames);
+            instructors = instructors.filter(name => name !== user.first_name + " " + user.last_name);
+
+            await batch.update({ instructorNames: JSON.stringify(instructors) });
+          }
+        }
+      }
+
+      res.status(200).json({ message: "User visibility and/or role updated successfully", user });
     } else {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: "User not found" });
     }
   } catch (err) {
     console.log(err.message);
-    res.status(500).end(err.message);
+    res.status(500).json({ message: "Internal server error", error: err.message });
   }
 };
+
 
 
 const requestPasswordReset = async (req, res) => {
