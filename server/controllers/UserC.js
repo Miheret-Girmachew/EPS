@@ -15,79 +15,62 @@ const secretQuestions = [
 ];
 
 const createUser = async (req, res) => {
-  // Extract data from the request body
   const { firstName, lastName, email, password, role = '3', secretQuestion, secretAnswer, batch, group } = req.body;
   const errors = [];
 
-  // Conditional validation based on role
-  if (role === "1") {
-    if (!firstName || !lastName || !email || !password || !secretQuestion || !secretAnswer) {
-      errors.push('All fields are required');
-    }
-  } else {
-    if (!firstName || !lastName || !email || !password || !secretQuestion || !secretAnswer || !batch || !group) {
-      errors.push('All fields are required, including batch and group');
+  if (!firstName || !lastName || !email || !password || !secretQuestion || !secretAnswer) {
+    errors.push('All fields are required');
+  }
+
+  if (role !== '1' && role !== '2') {
+    if (!batch || !group) {
+      errors.push('Batch and group are required for non-admin and non-instructor roles');
     }
   }
 
-  // Validate secret question
   if (!secretQuestions.includes(secretQuestion)) {
     errors.push('Invalid secret question');
   }
 
-  // Validate name
   const nameRegex = /^[A-Za-z]+$/;
   if (!nameRegex.test(firstName)) errors.push('First name must contain only letters');
   if (!nameRegex.test(lastName)) errors.push('Last name must contain only letters');
 
-  // Validate email
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) errors.push('Invalid email format');
 
-  // Validate password
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
   if (!passwordRegex.test(password)) {
     errors.push('Password must contain at least one uppercase letter, one lowercase letter, one special character, and one number');
   }
 
-  // Validate batch and group for non-admins
-  if (role !== "1") {
-    if (!batch || typeof batch !== 'string') errors.push('Batch is required and must be a string');
-    if (!group || typeof group !== 'string') errors.push('Group is required and must be a string');
-  }
-
-  // If there are validation errors, return them
   if (errors.length > 0) {
     return res.status(400).json({ errors });
   }
 
   try {
-    // Hash password and secret answer
     const salt = await bcrypt.genSalt(10);
     const hashPassword = await bcrypt.hash(password, salt);
     const hashAnswer = await bcrypt.hash(secretAnswer, salt);
 
-    // Create the user
-    let user;
-    if (role === '1') {
-      user = await User.create({
-        firstName, lastName, email, password: hashPassword, role, visibility: "1", secretQuestion, secretAnswer: hashAnswer
-      });
-    } else {
-      user = await User.create({
-        firstName, lastName, email, password: hashPassword, role, visibility: "1", secretQuestion, secretAnswer: hashAnswer, batch, group
-      });
-    }
+    const user = await User.create({
+      firstName,
+      lastName,
+      email,
+      password: hashPassword,
+      role,
+      visibility: "1",
+      secretQuestion,
+      secretAnswer: hashAnswer,
+      ...(role !== '1' && role !== '2' ? { batch, group } : {})
+    });
 
-    // Generate authentication tokens
     const accessToken = jwt.sign({ user_id: user.userId, email: user.email, role: user.role }, process.env.SECRET_KEY, { expiresIn: '15m' });
     const refreshToken = jwt.sign({ user_id: user.userId, email: user.email, role: user.role }, process.env.REFRESH_SECRET_KEY, { expiresIn: '7d' });
 
-    // Store the refresh token in the user record
     user.refreshToken = refreshToken;
     await user.save();
 
-    // Send JSON response with tokens and user details
     return res.json({
       message: "User created successfully",
       user: { userId: user.userId, role: user.role },
@@ -100,9 +83,6 @@ const createUser = async (req, res) => {
   }
 };
 
-
-
-
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -111,7 +91,6 @@ const loginUser = async (req, res) => {
   }
 
   try {
-     // Fetch the user by email, but only select necessary columns
     const user = await User.findOne({
         where: { email },
         attributes: ['userId', 'email', 'password', 'role', 'firstName', 'lastName'],
@@ -126,22 +105,19 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ error: 'Invalid email or password' });
     }
 
-    // Create a JWT token including user_id, email, role, firstName, and lastName
     const token = jwt.sign(
       {
         user_id: user.userId,
         email: user.email,
         role: user.role,
-        firstName: user.firstName, // Add firstName
-        lastName: user.lastName, // Add lastName
+        firstName: user.firstName, 
+        lastName: user.lastName,
       },
       process.env.SECRET_KEY,
       { expiresIn: "3d" }
     );
 
-    console.log("token",token)
     res.setHeader('Authorization', `Bearer ${token}`);
-    // Send back token along with user details
     return res.json({
       token,
       user: {
@@ -158,15 +134,10 @@ const loginUser = async (req, res) => {
   }
 };
 
-
 const getUserById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Check if the requesting user is an instructor or admin
-    // if (req.user.role !== "1" &&  req.user.role !== "2") {
-    //   return res.status(403).json({ message: 'Access denied' });
-    // }
 
     const user = await User.findOne({ where: { userId: id, visibility: true } });
     if (user) {
@@ -182,13 +153,25 @@ const getUserById = async (req, res) => {
 
 const updateUserById = async (req, res) => {
   const { id } = req.params;
-  const { firstName, lastName } = req.body; // Only allowing firstName and lastName to be updated
+  const { password, secretQuestion, secretAnswer } = req.body;
 
   try {
     const user = await User.findOne({ where: { userId: id } });
     if (user) {
-      user.firstName = firstName || user.firstName;
-      user.lastName = lastName || user.lastName;
+      if (password) {
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+      }
+
+      if (secretQuestion && secretAnswer) {
+        if (secretQuestions.includes(secretQuestion)) {
+          const salt = await bcrypt.genSalt(10);
+          user.secretQuestion = secretQuestion;
+          user.secretAnswer = await bcrypt.hash(secretAnswer, salt);
+        } else {
+          return res.status(400).json({ message: 'Invalid secret question' });
+        }
+      }
 
       await user.save();
       res.json(user);
@@ -196,86 +179,69 @@ const updateUserById = async (req, res) => {
       res.status(404).json({ message: 'User not found' });
     }
   } catch (err) {
-    console.log(err.message);
+    console.error('Error updating user:', err.message);
     res.status(500).end(err.message);
   }
 };
 
 const updateUserVisibilityByAdmin = async (req, res) => {
   const { id } = req.params;
-  const { visibility, role } = req.body; // Get role from request
+  const { visibility } = req.body; 
 
   try {
-    // Check if the logged-in user is an admin
     if (req.user.role !== "1") {
-      return res.status(403).json({ message: "Only admins can update user visibility and role" });
+      return res.status(403).json({ message: "Only admins can update user visibility" });
     }
 
     let user = await User.findOne({ where: { userId: id } });
 
     if (user) {
-      // Store previous role to check if role changes
-      const previousRole = user.role;
-
-      // Update visibility if provided
       if (visibility !== undefined) {
         if (["0", "1", "2"].includes(visibility)) {
           user.visibility = visibility;
         } else {
           return res.status(400).json({ message: "Invalid visibility value" });
         }
-      }
-
-      // Update role if provided
-      if (role !== undefined) {
-        if (["1", "2", "3"].includes(role)) {
-          user.role = role;
-        } else {
-          return res.status(400).json({ message: "Invalid role value" });
-        }
+      } else {
+        return res.status(400).json({ message: "Visibility value is required" });
       }
 
       // Save the updated user details
       await user.save();
       await user.reload();
 
-      // Check if role changed and update instructorNames in Batch
-      if (previousRole !== role) {
-        if (role === "2") {
-          // Add user to instructorNames
-          await Batch.update(
-            {
-              instructorNames: Sequelize.fn("JSON_ARRAY_APPEND", Sequelize.col("instructorNames"), "$", user.first_name + " " + user.last_name)
-            },
-            {
-              where: { user_id: id }
-            }
-          );
-        } else if (previousRole === "2") {
-          // Remove user from instructorNames when changed from instructor
-          let batches = await Batch.findAll({ where: { user_id: id } });
-
-          for (let batch of batches) {
-            let instructors = JSON.parse(batch.instructorNames);
-            instructors = instructors.filter(name => name !== user.first_name + " " + user.last_name);
-
-            await batch.update({ instructorNames: JSON.stringify(instructors) });
-          }
-        }
-      }
-
-      res.status(200).json({ message: "User visibility and/or role updated successfully", user });
+      res.status(200).json({ message: "User visibility updated successfully", user });
     } else {
       res.status(404).json({ message: "User not found" });
     }
   } catch (err) {
-    console.log(err.message);
+    console.log('Error updating user visibility:', err.message);
     res.status(500).json({ message: "Internal server error", error: err.message });
   }
 };
 
+const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { newPassword } = req.body;
 
+  try {
+    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+    const user = await User.findOne({ where: { userId: decoded.id } });
 
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(newPassword, salt);
+    user.password = hashPassword;
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successfully' });
+  } catch (err) {
+    console.log(err.message);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
 const requestPasswordReset = async (req, res) => {
   const { email, secretQuestion, secretAnswer } = req.body;
 
@@ -401,57 +367,10 @@ const requestPasswordReset = async (req, res) => {
   }
 };
 
-const sendTestEmail = (req, res) => {
-  let mailSender = nodemailer.createTransport({
-    service: 'gmail',
-    port: 465,
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-  console.log("Email test configuration:", {
-         service: 'gmail',
-         port: 465,
-         auth: {
-           user: process.env.EMAIL_USER,
-           pass: process.env.EMAIL_PASS,
-         },
-     });
-
-  let details = {
-    from: process.env.EMAIL_USER,
-    to: 'test@example.com', // Use your email for testing
-    subject: 'Test Email',
-    text: 'This is a test email.',
-  };
-
-    mailSender.sendMail(details, (err, info) => {
-        if (err) {
-           console.log('Error sending test email:', err);
-            console.log('Test Email sending error details:', {
-              details,
-             processEnv: { ...process.env }, // Include the env variable for debugging purposes
-              });
-              res.status(500).json({ message: 'Error sending test email' });
-        } else {
-            console.log('Test email sent:', info.response);
-             res.status(200).json({ message: 'Test email sent successfully!' });
-        }
-    });
-};
-
 const getAllStudents = async (req, res) => {
   try {
-    // Only allow admins or instructors to fetch all students
-    // if (req.user.role !== '1') {
-    //   return res.status(403).json({ message: 'Access denied' });
-    // }
-
-    // Fetch all users with role 3 (assuming '3' is the role for students)
     const students = await User.findAll({ where: { role: '3', visibility: true } });
 
-    // Check if students are found
     if (students.length > 0) {
       return res.status(200).json(students);
     } else {
@@ -463,18 +382,10 @@ const getAllStudents = async (req, res) => {
   }
 };
 
-
 const getAllInstructors = async (req, res) => {
   try {
-    // Only allow admins or instructors to fetch all instructors
-    // if (req.user.role !== '1') {
-    //   return res.status(403).json({ message: 'Access denied' });
-    // }
-
-    // Fetch all users with role 2 (assuming '2' is the role for instructors)
     const instructors = await User.findAll({ where: { role: '2', visibility: true } });
 
-    // Check if instructors are found
     if (instructors.length > 0) {
       return res.status(200).json(instructors);
     } else {
@@ -485,34 +396,6 @@ const getAllInstructors = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error', error: err.message });
   }
 };
-
-// Function to reset the password
-const resetPassword = async (req, res) => {
-  const { token } = req.params;
-  const { newPassword } = req.body;
-
-  try {
-    // Verify the token
-    const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    const user = await User.findOne({ where: { userId: decoded.id } });
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Hash the new password and save it
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(newPassword, salt);
-    user.password = hashPassword;
-    await user.save();
-
-    res.status(200).json({ message: 'Password reset successfully' });
-  } catch (err) {
-    console.log(err.message);
-    res.status(500).json({ message: 'Internal server error' });
-  }
-};
-
 
 const updateStudentSubmissionStatus = async (req, res) => {
   try {
@@ -553,6 +436,8 @@ const updateStudentSubmissionStatus = async (req, res) => {
 
 
 
+
+
 module.exports = {
   createUser,
   loginUser,
@@ -563,6 +448,6 @@ module.exports = {
   getAllStudents,
   getAllInstructors,
   updateUserVisibilityByAdmin,
-  updateStudentSubmissionStatus,
+  updateStudentSubmissionStatus
 
 };

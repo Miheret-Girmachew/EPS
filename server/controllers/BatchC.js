@@ -1,51 +1,53 @@
 const { Batch } = require('../models');
+const { User } = require('../models');  
 
 const createBatch = async (req, res) => {
   const { batchName } = req.body;
 
-  // Role check (assuming '1' is the admin role)
-  // if (req.user.role !== '1') {
-  //   return res.status(403).json({ error: 'Access denied' });
-  // }
-
   try {
-    // Check if a batch with the same name already exists
     const existingBatch = await Batch.findOne({ where: { batchName } });
     if (existingBatch) {
       return res.status(400).json({ message: 'Batch with the same name already exists' });
     }
-
-    // If no existing batch, create a new one
     const batch = await Batch.create({ 
       batchName,
-      user_id: req.user.user_id, // Assuming this comes from authenticated user
+      user_id: req.user.user_id, 
     });
     
     console.log('Batch created:', batch);
     res.json(batch);
   } catch (err) {
-    console.error('Error occurred while creating batch:', err); // Log the error
+    console.error('Error occurred while creating batch:', err); 
     res.status(500).json({ 
       error: 'Internal server error', 
-      details: err.message, // Include the error message
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined, // Include stack trace if in development
+      details: err.message, 
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined, 
     });
   }
 };
-
-
 
 const getBatchById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const batch = await Batch.findOne({ where: { batchId: id, visibility: true } }); // only his students for the teacher 
-
-    if (batch) {
-      res.json(batch);
-    } else {
-      res.status(404).json({ message: 'Batch not found or not visible' });
+    console.log('getBatchById - Start. id:', id);
+    const batch = await Batch.findOne({
+      where: { batchId: id, visibility: true },
+    });
+    console.log('getBatchById - After fetch. batch:', batch ? batch.toJSON() : 'Batch not found');
+    if (!batch) {
+      return res.status(404).json({ message: 'Batch not found or not visible' });
     }
+
+
+    const responseBatch = {
+      ...batch.toJSON(),
+      groups: batch.groups
+    }
+
+
+    res.json(responseBatch);
+    console.log('getBatchById - End');
   } catch (err) {
     console.log(err.message);
     res.status(500).end(err.message);
@@ -55,7 +57,13 @@ const getBatchById = async (req, res) => {
 const getAllBatches = async (req, res) => {
   try {
     const batches = await Batch.findAll({ where: { visibility: true } });
-    res.json(batches);
+
+    const updatedBatches = batches.map(batch => ({
+      ...batch.toJSON(),
+      instructors: batch.instructors ? JSON.parse(batch.instructors) : []
+    }));
+
+    res.json(updatedBatches);
   } catch (err) {
     console.log(err.message);
     res.status(500).end(err.message);
@@ -66,35 +74,24 @@ const updateBatchById = async (req, res) => {
   const { id } = req.params;
   const { batchName, visibility } = req.body;
 
-  // Check if the user is an admin
-  // if (req.user.role !== '1') {
-  //   return res.status(403).json({ error: 'Access denied' });
-  // }
-
   try {
-    // Find the batch by its ID
     const batch = await Batch.findOne({ where: { batchId: id } });
 
     if (batch) {
-      // If a new batch name is provided, check if it is already used by another batch
       if (batchName && batchName !== batch.batchName) {
         const existingBatch = await Batch.findOne({ where: { batchName } });
         
-        // If the new name exists in another batch, return an error
         if (existingBatch && existingBatch.batchId !== id) {
           return res.status(400).json({ message: 'Batch with the same name already exists' });
         }
 
-        // Otherwise, update the batch name
         batch.batchName = batchName;
       }
 
-      // Update the visibility field if provided
       if (visibility !== undefined) {
         batch.visibility = visibility;
       }
 
-      // Save the updated batch
       await batch.save();
       res.json(batch);
     } else {
@@ -104,12 +101,11 @@ const updateBatchById = async (req, res) => {
     console.error('Error updating batch:', err);
     res.status(500).json({
       error: 'Internal server error',
-      details: err.message, // Include error details for debugging
-      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined, // Include stack trace if in development
+      details: err.message, 
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined, 
     });
   }
 };
-
 
 const deleteBatchById = async (req, res) => {
   const { id } = req.params;
@@ -132,110 +128,106 @@ const deleteBatchById = async (req, res) => {
     res.status(500).end(err.message);
   }
 };
-
 const addGroupToBatch = async (req, res) => {
   const { id } = req.params;
-  const { groupName } = req.body; // Removed instructorName from destructuring
+  let { groups: newGroups } = req.body; // Expect an array or a single group object
 
-  // Check if the user is an admin
   if (req.user.role !== '1') {
     return res.status(403).json({ error: 'Access denied' });
   }
 
-  // Validate the input
-  if (!groupName) {
-    return res.status(400).json({ error: 'Group name is required' });
+  // Handle single group as an array
+  if (!newGroups) {
+    return res.status(400).json({ error: "groupName required" });
+  }
+  if (!Array.isArray(newGroups)) {
+    newGroups = [newGroups];
+  }
+
+  if (newGroups.length === 0) {
+    return res.status(400).json({ error: 'At least one group name is required' });
   }
 
   try {
-    // Find the batch by batchId
+    console.log('addGroupToBatch - Request Body:', req.body); // Log request body
     const batch = await Batch.findOne({ where: { batchId: id } });
 
     if (!batch) {
       return res.status(404).json({ message: 'Batch not found' });
     }
 
-    // Ensure groups is an array (instead of storing as a JSON string)
+    console.log('addGroupToBatch - Current Batch Groups:', batch.groups); // Log current batch groups
+
     let groups = batch.groups;
 
     if (!Array.isArray(groups)) {
-      groups = []; // If groups is null, initialize it as an array
+      groups = [];
     }
 
-    // Check if a group with the same name already exists
-    const existingGroup = groups.find(group => group.groupName === groupName);
-    if (existingGroup) {
-      return res.status(400).json({ message: 'Group with the same name already exists in the batch' });
+    let errors = []; // Array to store duplicate group errors
+
+    for (const newGroup of newGroups) {
+      const { groupName } = newGroup;
+      if (!groupName) {
+        errors.push(`groupName is required`);
+        continue;
+      }
+      const existingGroup = groups.find(group => group.groupName === groupName);
+      if (existingGroup) {
+        errors.push(`Group with name '${groupName}' already exists.`);
+        continue;
+      }
+      groups.push({ groupName });
     }
 
-    // Add the new group to the array
-    const newGroup = { groupName };
-    groups.push(newGroup);
+    if (errors.length > 0) {
+      return res.status(400).json({ errors });
+    }
 
-    // Update the batch with the new groups and group count
-    batch.groups = groups; // Store as an array in the database
+    batch.groups = groups;
+        console.log('addGroupToBatch - Groups to be saved:', batch.groups); // Log groups to be saved
     batch.groupCount = groups.length;
-
-    // Save the updated batch
-    await batch.save();
+        await batch.save();
 
     return res.json({
-      message: 'Group added successfully',
+      message: 'Group(s) added successfully',
       batchId: batch.batchId,
-      groups: batch.groups, // Return the updated groups array
+      groups: batch.groups,
       groupCount: batch.groupCount,
     });
   } catch (err) {
     console.error('Error:', err.message);
-    return res.status(500).json({ error: 'An error occurred while adding the group' });
+    return res.status(500).json({ error: 'An error occurred while adding the group(s)' });
   }
 };
-
-
 
 
 const removeGroupFromBatch = async (req, res) => {
   const { id } = req.params;
   const { groupName } = req.body;
 
-  // Check if the user has the right role
   if (req.user.role !== '1') {
     return res.status(403).json({ error: 'Access denied' });
   }
 
   try {
-    // Find the batch by batchId
     let batch = await Batch.findOne({ where: { batchId: id } });
 
     if (batch) {
-      // Log the type and value of the groups field
       console.log('Groups field value:', batch.groups);
       console.log('Groups field type:', typeof batch.groups);
 
-      // Ensure groups is an array
       let groups;
-      if (typeof batch.groups === 'string') {
-        try {
-          groups = JSON.parse(batch.groups); // Parse if it's a JSON string
-        } catch (error) {
-          return res.status(500).json({ error: 'Failed to parse groups' });
-        }
-      } else if (Array.isArray(batch.groups)) {
+       if (Array.isArray(batch.groups)) {
         groups = batch.groups;
       } else {
-        // Log an error if groups is not an array
-        console.error('Groups field is not an array:', batch.groups);
-        return res.status(500).json({ error: 'Groups field is not an array' });
+          return res.status(500).json({ error: 'Groups field is not an array' });
       }
 
-      // Filter out the group that should be removed
       let updatedGroups = groups.filter(group => group.groupName !== groupName);
+      batch.groups = updatedGroups;
+      batch.groupCount = updatedGroups.length;
 
-      // Update the batch fields
-      batch.groups = JSON.stringify(updatedGroups); // Store as a JSON string
-      batch.groupCount = updatedGroups.length; // Update the group count
-
-      // Save the updated batch
       await batch.save();
       res.json(batch);
     } else {
@@ -247,32 +239,26 @@ const removeGroupFromBatch = async (req, res) => {
   }
 };
 
-
 const updateGroupInBatch = async (req, res) => {
   const { id } = req.params;
   const { groupName, newGroupName, newInstructorName } = req.body;
 
-  // Check if the user is an admin
   if (req.user.role !== '1') {
     return res.status(403).json({ error: 'Access denied' });
   }
 
   try {
-    // Find the batch by batchId
     const batch = await Batch.findOne({ where: { batchId: id } });
 
     if (batch) {
 
       let groups = batch.groups;
 
-      // Check if groups is a string and attempt to parse it
       if (typeof groups === 'string') {
         try {
-          // Trim and parse the JSON string to an array
           groups = JSON.parse(groups.trim());
           console.log("Parsed groups:", groups);
 
-          // Ensure that the parsed data is an array
           if (!Array.isArray(groups)) {
             throw new Error("Parsed groups is not an array");
           }
@@ -281,14 +267,10 @@ const updateGroupInBatch = async (req, res) => {
           return res.status(500).json({ error: 'Error parsing groups from string', details: error.message });
         }
       }
-
-      // Proceed if groups is an array
       if (Array.isArray(groups)) {
         const groupIndex = groups.findIndex(group => group.groupName === groupName);
 
-        // Check if the group to be updated exists
         if (groupIndex !== -1) {
-          // Check if the new group name already exists in the batch (for another group)
           if (newGroupName) {
             const existingGroup = groups.find(group => group.groupName === newGroupName);
 
@@ -297,30 +279,23 @@ const updateGroupInBatch = async (req, res) => {
             }
           }
 
-          // Update the group details
           groups[groupIndex].groupName = newGroupName || groups[groupIndex].groupName;
           groups[groupIndex].instructorName = newInstructorName || groups[groupIndex].instructorName;
 
-          // Save the updated groups as JSON
-          batch.groups = JSON.stringify(groups);
-          batch.groupCount = groups.length; // Update the group count
 
-          // Save the updated batch
+          batch.groups = JSON.stringify(groups);
+          batch.groupCount = groups.length;
+
           await batch.save();
           res.json(batch);
         } else {
-          // Group not found
           res.status(404).json({ message: 'Group not found' });
         }
       } else {
-        // Log the invalid groups data for debugging
         console.error("Invalid groups data:", groups);
-
-        // If groups is not an array after parsing, return an error
         res.status(500).json({ error: 'Internal server error: Groups is not an array' });
       }
     } else {
-      // Batch not found
       res.status(404).json({ message: 'Batch not found' });
     }
   } catch (err) {
@@ -328,15 +303,14 @@ const updateGroupInBatch = async (req, res) => {
     res.status(500).end(err.message);
   }
 };
+
 const getGroupsByBatchId = async (req, res) => {
   const { id } = req.params;
 
   try {
-      // Find the batch by batchId
-      const batch = await Batch.findOne({ where: { batchId: id, visibility: true } });
+         const batch = await Batch.findOne({ where: { batchId: id, visibility: true } });
 
       if (batch) {
-          // Parse groups if necessary and return
           let groups = batch.groups;
           if (typeof groups === 'string') {
               try {
@@ -345,15 +319,14 @@ const getGroupsByBatchId = async (req, res) => {
                   return res.status(500).json({ error: 'Failed to parse groups' });
               }
           }
-          res.set('Content-Type', 'application/json'); // Optional: Set content type
-          // Respond with the groups
+          res.set('Content-Type', 'application/json'); 
           res.json(groups);
       } else {
           res.status(404).json({ message: 'Batch not found or not visible' });
       }
   } catch (err) {
       console.error(err.message);
-       res.status(500).json({ error: err.message }); //Improved error handling.
+       res.status(500).json({ error: err.message }); 
   }
 };
 
@@ -361,11 +334,9 @@ const getGroupByBatchIdAndGroupName = async (req, res) => {
   const { id, groupName } = req.params;
 
   try {
-    // Find the batch by batchId
     const batch = await Batch.findOne({ where: { batchId: id, visibility: true } });
 
     if (batch) {
-      // Parse groups if necessary
       let groups = batch.groups;
       if (typeof groups === 'string') {
         try {
@@ -375,7 +346,6 @@ const getGroupByBatchIdAndGroupName = async (req, res) => {
         }
       }
 
-      // Find the specific group by name
       const group = groups.find(group => group.groupName === groupName);
 
       if (group) {
@@ -391,10 +361,97 @@ const getGroupByBatchIdAndGroupName = async (req, res) => {
     res.status(500).end(err.message);
   }
 };
+const assignInstructorToBatch = async (req, res) => {
+  const { batchId, instructorId } = req.body;
 
+  try {
+    const instructor = await User.findOne({ where: { userId: instructorId, role: '2', visibility: true } });
+    if (!instructor) {
+      return res.status(404).json({ message: 'Instructor not found or not authorized' });
+    }
 
+    const batch = await Batch.findOne({ where: { batchId } });
+    if (!batch) {
+      return res.status(404).json({ message: 'Batch not found' });
+    }
 
+    let instructors = batch.instructors ? JSON.parse(batch.instructors) : [];
+    if (!instructors.includes(instructorId)) {
+      instructors.push(instructorId);
+    }
+    await batch.update({ instructors: JSON.stringify(instructors) });
 
+    res.status(200).json({ message: 'Instructor assigned to batch successfully' });
+  } catch (err) {
+    console.error('Error assigning instructor to batch:', err);
+    res.status(500).json({ message: 'Internal Server Error', error: err.message });
+  }
+};
+
+const assignInstructorToGroup = async (req, res) => {
+  const { batchId, groupName, instructorId } = req.body;
+
+  try {
+    const batch = await Batch.findOne({ where: { batchId } });
+    if (!batch) {
+      return res.status(404).json({ message: 'Batch not found' });
+    }
+
+    let groups = batch.groups ? JSON.parse(batch.groups) : [];
+    const groupIndex = groups.findIndex(g => g.groupName === groupName);
+    if (groupIndex === -1) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    if (!groups[groupIndex].instructors) {
+      groups[groupIndex].instructors = [];
+    }
+
+    if (!groups[groupIndex].instructors.includes(instructorId)) {
+      groups[groupIndex].instructors.push(instructorId);
+    }
+
+    await batch.update({ groups: JSON.stringify(groups) });
+    res.status(200).json({ message: 'Instructor assigned to group successfully' });
+  } catch (err) {
+    console.error('Error assigning instructor to group:', err);
+    res.status(500).json({ message: 'Internal Server Error', error: err.message });
+  }
+};
+
+const updateInstructorsInGroup = async (req, res) => {
+  const { batchId, groupName, instructorIds } = req.body;
+
+  try {
+    const batch = await Batch.findOne({ where: { batchId } });
+    if (!batch) {
+      return res.status(404).json({ message: 'Batch not found' });
+    }
+
+    let groups = batch.groups ? JSON.parse(batch.groups) : [];
+    const groupIndex = groups.findIndex(g => g.groupName === groupName);
+    if (groupIndex === -1) {
+      return res.status(404).json({ message: 'Group not found' });
+    }
+
+    if (!groups[groupIndex].instructors) {
+      groups[groupIndex].instructors = [];
+    }
+
+    // Ensure all instructor IDs are valid
+    const validInstructors = await User.findAll({ where: { userId: instructorIds, role: '2', visibility: true } });
+    const validInstructorIds = validInstructors.map(inst => inst.userId);
+
+    // Update instructors list
+    groups[groupIndex].instructors = validInstructorIds;
+
+    await batch.update({ groups: JSON.stringify(groups) });
+    res.status(200).json({ message: 'Instructors updated in group successfully' });
+  } catch (err) {
+    console.error('Error updating instructors in group:', err);
+    res.status(500).json({ message: 'Internal Server Error', error: err.message });
+  }
+};
 
 module.exports = {
   createBatch,
@@ -405,6 +462,9 @@ module.exports = {
   addGroupToBatch,
   removeGroupFromBatch,
   updateGroupInBatch,
-  getGroupsByBatchId, // New function
-  getGroupByBatchIdAndGroupName // New function
+  getGroupsByBatchId,
+  getGroupByBatchIdAndGroupName,
+  assignInstructorToBatch,
+  assignInstructorToGroup,
+  updateInstructorsInGroup
 };

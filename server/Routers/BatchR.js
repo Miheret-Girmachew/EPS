@@ -8,9 +8,13 @@ const {
   addGroupToBatch,
   removeGroupFromBatch,
   updateGroupInBatch,
-  getGroupsByBatchId, // New route
-  getGroupByBatchIdAndGroupName 
+  getGroupsByBatchId, 
+  getGroupByBatchIdAndGroupName ,
+  assignInstructorToBatch, 
+  assignInstructorToGroup,
+  updateInstructorsInGroup
 } = require('../controllers/BatchC');
+
 
 const router = express.Router();
 const authenticateToken = require('../middleware/authenticateToken');
@@ -25,5 +29,7 @@ router.delete('/:id/remove/groups', authenticateToken, removeGroupFromBatch);
 router.patch('/up/:id', authenticateToken, updateGroupInBatch);
 router.get('/:id/groups', getGroupsByBatchId); 
 router.get('/:id/groups/:groupName', getGroupByBatchIdAndGroupName);
-
+router.post('/assign-instructor/batch', authenticateToken, assignInstructorToBatch);
+router.post('/assign-instructor/group', authenticateToken, assignInstructorToGroup);
+router.patch('/update-instructors/group', authenticateToken, updateInstructorsInGroup);
 module.exports = router;

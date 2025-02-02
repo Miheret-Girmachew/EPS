@@ -15,12 +15,12 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         allowNull: false,
         references: {
-          model: 'Users', 
-          key: 'userId', // Foreign key in the Users table
+          model: 'Users',
+          key: 'userId', 
         },
       },
       groups: {
-        type: DataTypes.JSON, // Use DataTypes.JSON instead of Sequelize.JSON
+        type: DataTypes.JSON, 
         allowNull: false,
         defaultValue: [],
       },
@@ -28,10 +28,15 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         defaultValue: 0,
       },
+      instructors: {
+        type: DataTypes.JSON, 
+        allowNull: true, 
+        defaultValue: [], 
+      },
       instructorNames: {
-        type: DataTypes.JSON, // JSON for multiple instructor names
-        allowNull: true, // Set to true if it's optional
-        defaultValue: [], // Ensure it initializes as an empty array
+        type: DataTypes.JSON, 
+        allowNull: true,
+        defaultValue: [], 
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -49,11 +54,11 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
-  // Define Associations
+ 
   Batch.associate = (models) => {
     Batch.belongsTo(models.User, {
-      foreignKey: 'user_id', // Matches the field in this table
-      onDelete: 'CASCADE', // Deletes batches when the associated user is deleted
+      foreignKey: 'user_id', 
+      onDelete: 'CASCADE',
     });
   };
 
