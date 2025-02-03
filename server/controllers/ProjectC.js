@@ -38,25 +38,25 @@ const createProject = async (req, res) => {
 };
 
 const getProjects = async (req, res) => {
-  const { id } = req.params; // Extract 'id' from req.params
+  const { id } = req.params; 
 
   try {
     const projects = await Project.findAll({
       where: {
-        batchId: id, // Filter projects by batchId
-        visibility: true, // Fetch only projects where visibility is set to true
+        batchId: id, 
+        visibility: true, 
       },
     });
 
-    // If no projects found, return an empty array
+    
     if (!projects.length) {
-      return res.status(200).json([]); // Respond with an empty array if no projects
+      return res.status(200).json([]); 
     }
 
-    // If projects are found, return them in the response
+    
     res.status(200).json(projects);
   } catch (error) {
-    console.error('Error details:', error); // Log the full error
+    console.error('Error details:', error); 
     res.status(500).json({ message: 'Failed to retrieve projects', error: error.message });
   }
 };
