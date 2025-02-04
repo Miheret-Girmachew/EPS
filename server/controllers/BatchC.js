@@ -129,78 +129,57 @@ const deleteBatchById = async (req, res) => {
   }
 };
 const addGroupToBatch = async (req, res) => {
-  const { id } = req.params;
-  let { groups: newGroups } = req.body; 
+  const { batchId } = req.params;
+  const { groups } = req.body;
 
-  if (req.user.role !== '1') {
-    return res.status(403).json({ error: 'Access denied' });
-  }
-
-  if (!newGroups) {
-    return res.status(400).json({ error: "Groups required" });
-  }
-
-  if (!Array.isArray(newGroups)) {
-    newGroups = [newGroups];
-  }
-
-  if (newGroups.length === 0) {
-    return res.status(400).json({ error: 'At least one group name is required' });
+  if (!batchId) {
+    return res.status(400).json({ message: 'batchId is required in the URL' });
   }
 
   try {
-    const batch = await Batch.findOne({ where: { batchId: id } });
-
+    // Find the batch by batchId
+    const batch = await Batch.findOne({ where: { batchId } });
     if (!batch) {
       return res.status(404).json({ message: 'Batch not found' });
     }
 
-    // Ensure groups is an array, even if stored as JSON or a string
-    let groups = batch.groups || []; 
+    // Ensure that batch.groups is an array (parse it if necessary)
+    let existingGroups = batch.groups;
 
-    if (typeof groups === 'string') {
+    // If the groups are stored as a string, parse them into an array
+    if (typeof existingGroups === 'string') {
       try {
-        groups = JSON.parse(groups.trim());
-      } catch (error) {
-        console.error("Error parsing groups:", error.message);
-        return res.status(500).json({ error: 'Error parsing groups from database' });
+        existingGroups = JSON.parse(existingGroups);
+      } catch (e) {
+        return res.status(400).json({ message: 'Invalid format for groups' });
       }
     }
 
-    if (!Array.isArray(groups)) {
-      groups = [];
+    // Ensure it's an array, otherwise default to an empty array
+    if (!Array.isArray(existingGroups)) {
+      existingGroups = [];
     }
 
-    // Avoid duplicate group names
-    let errors = [];
-    newGroups.forEach(newGroup => {
-      if (!newGroup) {
-        errors.push(`Group name is required.`);
-      } else if (groups.includes(newGroup)) {
-        errors.push(`Group '${newGroup}' already exists.`);
-      } else {
-        groups.push(newGroup);
+    // Add the new groups (ensure they're not duplicates)
+    groups.forEach(groupName => {
+      // Check if group already exists
+      if (!existingGroups.some(group => group.groupName === groupName)) {
+        existingGroups.push({ groupName, instructors: [] });
       }
     });
 
-    if (errors.length > 0) {
-      return res.status(400).json({ errors });
-    }
+    // Save the updated groups array back to the batch
+    await batch.update({ groups: existingGroups });
 
-    batch.groups = groups; 
-    batch.groupCount = groups.length;
-
-    await batch.save();
-
-    return res.json({
+    res.status(200).json({
       message: 'Group(s) added successfully',
-      batchId: batch.batchId,
-      groups: batch.groups,
-      groupCount: batch.groupCount,
+      batchId,
+      groups: existingGroups.map(g => g.groupName),
+      groupCount: existingGroups.length,
     });
   } catch (err) {
-    console.error('Error:', err.message);
-    return res.status(500).json({ error: `An error occurred while adding the group(s): ${err.message}` });
+    console.error('Error adding groups to batch:', err);
+    res.status(500).json({ message: 'Internal Server Error', error: err.message });
   }
 };
 
@@ -392,35 +371,55 @@ const assignInstructorToBatch = async (req, res) => {
 };
 
 const assignInstructorToGroup = async (req, res) => {
-  const { batchId, groupName, instructorId } = req.body;
+  const { batchId, groupName, instructorIds } = req.body;
 
   try {
     const batch = await Batch.findOne({ where: { batchId } });
     if (!batch) {
-      return res.status(404).json({ message: 'Batch not found' });
+      return res.status(404).json({ message: "Batch not found" });
     }
 
     let groups = batch.groups ? JSON.parse(batch.groups) : [];
+
+    // Ensure groups are stored as objects, convert if necessary
+    if (groups.length && typeof groups[0] === "string") {
+      groups = groups.map(name => ({ groupName: name, instructors: [] }));
+    }
+
     const groupIndex = groups.findIndex(g => g.groupName === groupName);
     if (groupIndex === -1) {
-      return res.status(404).json({ message: 'Group not found' });
+      return res.status(404).json({ message: "Group not found" });
     }
 
     if (!groups[groupIndex].instructors) {
       groups[groupIndex].instructors = [];
     }
 
-    if (!groups[groupIndex].instructors.includes(instructorId)) {
-      groups[groupIndex].instructors.push(instructorId);
-    }
+    let instructorNames = batch.instructorNames ? JSON.parse(batch.instructorNames) : [];
 
-    await batch.update({ groups: JSON.stringify(groups) });
-    res.status(200).json({ message: 'Instructor assigned to group successfully' });
+    instructorIds.forEach(instructorId => {
+      if (!groups[groupIndex].instructors.includes(instructorId)) {
+        groups[groupIndex].instructors.push(instructorId);
+      }
+      if (!instructorNames.includes(instructorId)) {
+        instructorNames.push(instructorId);
+      }
+    });
+
+    await batch.update({
+      groups: JSON.stringify(groups),
+      instructorNames: JSON.stringify(instructorNames)
+    });
+
+    res.status(200).json({ message: "Instructor assigned to group successfully" });
+
   } catch (err) {
-    console.error('Error assigning instructor to group:', err);
-    res.status(500).json({ message: 'Internal Server Error', error: err.message });
+    console.error("Error assigning instructor to group:", err);
+    res.status(500).json({ message: "Internal Server Error", error: err.message });
   }
 };
+
+
 
 const updateInstructorsInGroup = async (req, res) => {
   const { batchId, groupName, instructorIds } = req.body;

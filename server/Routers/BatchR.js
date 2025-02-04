@@ -24,7 +24,7 @@ router.get('/get/:id', getBatchById);
 router.get('/all', getAllBatches);
 router.patch('/update/:id', authenticateToken, updateBatchById);
 router.delete('/delete/:id', authenticateToken, deleteBatchById);
-router.post('/add/:id/groups', authenticateToken, addGroupToBatch);
+router.post('/add/:batchId/groups', authenticateToken, addGroupToBatch);
 router.delete('/:id/remove/groups', authenticateToken, removeGroupFromBatch);
 router.patch('/up/:id', authenticateToken, updateGroupInBatch);
 router.get('/:id/groups', getGroupsByBatchId); 
