@@ -130,16 +130,16 @@ const deleteBatchById = async (req, res) => {
 };
 const addGroupToBatch = async (req, res) => {
   const { id } = req.params;
-  let { groups: newGroups } = req.body; // Expect an array or a single group object
+  let { groups: newGroups } = req.body; 
 
   if (req.user.role !== '1') {
     return res.status(403).json({ error: 'Access denied' });
   }
 
-  // Handle single group as an array
   if (!newGroups) {
-    return res.status(400).json({ error: "groupName required" });
+    return res.status(400).json({ error: "Groups required" });
   }
+
   if (!Array.isArray(newGroups)) {
     newGroups = [newGroups];
   }
@@ -149,45 +149,48 @@ const addGroupToBatch = async (req, res) => {
   }
 
   try {
-    console.log('addGroupToBatch - Request Body:', req.body); // Log request body
     const batch = await Batch.findOne({ where: { batchId: id } });
 
     if (!batch) {
       return res.status(404).json({ message: 'Batch not found' });
     }
 
-    console.log('addGroupToBatch - Current Batch Groups:', batch.groups); // Log current batch groups
+    // Ensure groups is an array, even if stored as JSON or a string
+    let groups = batch.groups || []; 
 
-    let groups = batch.groups;
+    if (typeof groups === 'string') {
+      try {
+        groups = JSON.parse(groups.trim());
+      } catch (error) {
+        console.error("Error parsing groups:", error.message);
+        return res.status(500).json({ error: 'Error parsing groups from database' });
+      }
+    }
 
     if (!Array.isArray(groups)) {
       groups = [];
     }
 
-    let errors = []; // Array to store duplicate group errors
-
-    for (const newGroup of newGroups) {
-      const { groupName } = newGroup;
-      if (!groupName) {
-        errors.push(`groupName is required`);
-        continue;
+    // Avoid duplicate group names
+    let errors = [];
+    newGroups.forEach(newGroup => {
+      if (!newGroup) {
+        errors.push(`Group name is required.`);
+      } else if (groups.includes(newGroup)) {
+        errors.push(`Group '${newGroup}' already exists.`);
+      } else {
+        groups.push(newGroup);
       }
-      const existingGroup = groups.find(group => group.groupName === groupName);
-      if (existingGroup) {
-        errors.push(`Group with name '${groupName}' already exists.`);
-        continue;
-      }
-      groups.push({ groupName });
-    }
+    });
 
     if (errors.length > 0) {
       return res.status(400).json({ errors });
     }
 
-    batch.groups = groups;
-        console.log('addGroupToBatch - Groups to be saved:', batch.groups); // Log groups to be saved
+    batch.groups = groups; 
     batch.groupCount = groups.length;
-        await batch.save();
+
+    await batch.save();
 
     return res.json({
       message: 'Group(s) added successfully',
@@ -197,7 +200,7 @@ const addGroupToBatch = async (req, res) => {
     });
   } catch (err) {
     console.error('Error:', err.message);
-    return res.status(500).json({ error: 'An error occurred while adding the group(s)' });
+    return res.status(500).json({ error: `An error occurred while adding the group(s): ${err.message}` });
   }
 };
 

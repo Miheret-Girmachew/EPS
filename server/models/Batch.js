@@ -54,7 +54,6 @@ module.exports = (sequelize, DataTypes) => {
     }
   );
 
- 
   Batch.associate = (models) => {
     Batch.belongsTo(models.User, {
       foreignKey: 'user_id', 
