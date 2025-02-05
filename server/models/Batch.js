@@ -16,11 +16,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         references: {
           model: 'Users',
-          key: 'userId', 
+          key: 'userId',
         },
       },
       groups: {
-        type: DataTypes.JSON, 
+        type: DataTypes.JSON,
         allowNull: false,
         defaultValue: [],
       },
@@ -29,14 +29,19 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: 0,
       },
       instructors: {
-        type: DataTypes.JSON, 
-        allowNull: true, 
-        defaultValue: [], 
+        type: DataTypes.JSON, // This can still hold instructor information
+        allowNull: true,
+        defaultValue: [],
       },
       instructorNames: {
-        type: DataTypes.JSON, 
+        type: DataTypes.JSON,
         allowNull: true,
-        defaultValue: [], 
+        defaultValue: [],
+      },
+      instructorIds: {
+        type: DataTypes.JSON, // Storing the list of instructor IDs as JSON array
+        allowNull: true,
+        defaultValue: [],
       },
       createdAt: {
         type: DataTypes.DATE,
@@ -56,9 +61,16 @@ module.exports = (sequelize, DataTypes) => {
 
   Batch.associate = (models) => {
     Batch.belongsTo(models.User, {
-      foreignKey: 'user_id', 
+      foreignKey: 'user_id',
       onDelete: 'CASCADE',
     });
+
+    // If you have an instructor model, you could associate it here, e.g.:
+    // Batch.belongsToMany(models.User, {
+    //   through: 'BatchInstructor',
+    //   as: 'instructors', 
+    //   foreignKey: 'batchId',
+    // });
   };
 
   return Batch;

@@ -1,5 +1,6 @@
 const { Batch } = require('../models');
 const { User } = require('../models');  
+const { Sequelize } = require('sequelize');
 
 const createBatch = async (req, res) => {
   const { batchName } = req.body;
@@ -9,9 +10,12 @@ const createBatch = async (req, res) => {
     if (existingBatch) {
       return res.status(400).json({ message: 'Batch with the same name already exists' });
     }
+
+    // Include instructorIds as an empty array when creating a new batch
     const batch = await Batch.create({ 
       batchName,
-      user_id: req.user.user_id, 
+      user_id: req.user.user_id,
+      instructorIds: [],  // Make sure instructorIds is always an empty array on creation
     });
     
     console.log('Batch created:', batch);
@@ -25,6 +29,7 @@ const createBatch = async (req, res) => {
     });
   }
 };
+
 
 const getBatchById = async (req, res) => {
   const { id } = req.params;
@@ -57,18 +62,19 @@ const getBatchById = async (req, res) => {
 const getAllBatches = async (req, res) => {
   try {
     const batches = await Batch.findAll({ where: { visibility: true } });
-
     const updatedBatches = batches.map(batch => ({
       ...batch.toJSON(),
       instructors: batch.instructors ? JSON.parse(batch.instructors) : []
     }));
 
+    console.log(updatedBatches); // Log to see the output in the console
     res.json(updatedBatches);
   } catch (err) {
     console.log(err.message);
     res.status(500).end(err.message);
   }
 };
+
 
 const updateBatchById = async (req, res) => {
   const { id } = req.params;
@@ -455,6 +461,30 @@ const updateInstructorsInGroup = async (req, res) => {
   }
 };
 
+const getBatchesForInstructor = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    // Fetch batches where this instructor is assigned using JSON_CONTAINS function in MariaDB
+    const batches = await Batch.findAll({
+      where: Sequelize.literal(`JSON_CONTAINS(instructorIds, '["${userId}"]')`),
+    });
+
+    if (!batches || batches.length === 0) {
+      return res.status(404).json({ message: 'No batches found for this instructor.' });
+    }
+
+    // Optionally, format batches or remove sensitive data before sending it in the response
+    const batchData = batches.map(batch => batch.get({ plain: true }));
+
+    res.json({ batches: batchData });
+  } catch (error) {
+    console.error("Error fetching batches for instructor:", error);
+    res.status(500).json({ message: "Failed to fetch batches", error: error.message });
+  }
+};
+
+
 module.exports = {
   createBatch,
   getBatchById,
@@ -468,5 +498,6 @@ module.exports = {
   getGroupByBatchIdAndGroupName,
   assignInstructorToBatch,
   assignInstructorToGroup,
-  updateInstructorsInGroup
+  updateInstructorsInGroup,
+  getBatchesForInstructor
 };

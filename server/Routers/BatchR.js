@@ -12,7 +12,8 @@ const {
   getGroupByBatchIdAndGroupName ,
   assignInstructorToBatch, 
   assignInstructorToGroup,
-  updateInstructorsInGroup
+  updateInstructorsInGroup,
+  getBatchesForInstructor
 } = require('../controllers/BatchC');
 
 
@@ -32,4 +33,7 @@ router.get('/:id/groups/:groupName', getGroupByBatchIdAndGroupName);
 router.post('/assign-instructor/batch', authenticateToken, assignInstructorToBatch);
 router.post('/assign-instructor/group', authenticateToken, assignInstructorToGroup);
 router.patch('/update-instructors/group', authenticateToken, updateInstructorsInGroup);
+router.get('/instructor/:userId/batches', authenticateToken, getBatchesForInstructor);
 module.exports = router;
+// In your routes file (routes.js or batchRoutes.js)
+
