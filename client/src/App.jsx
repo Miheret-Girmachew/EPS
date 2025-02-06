@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
-import Instructor from './pages/Instructor.jsx'
+import Instructor from './pages/Instructor.jsx';
 import StudentDashboard from './pages/StudentDashboard';
 import Dashboard from './pages/Dashboard';
 import Header from './components/Header/Header.jsx';
@@ -21,6 +21,7 @@ function App() {
   const isLoginPage = location.pathname === '/';
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -28,6 +29,7 @@ function App() {
       try {
         const decodedToken = jwtDecode(token);
         setIsAuthenticated(true);
+        setUser(decodedToken); // Set the decoded token as the user object
       } catch (error) {
         localStorage.removeItem('token');
         setIsAuthenticated(false);
@@ -71,7 +73,7 @@ function App() {
             path="/instructor/*"
             element={
               <AuthRoute isAuthenticated={isAuthenticated} redirectTo="/">
-                <Instructor />
+                <Instructor user={user} /> {/* Pass the user object */}
               </AuthRoute>
             }
           />

@@ -107,7 +107,7 @@ const loginUser = async (req, res) => {
 
     const token = jwt.sign(
       {
-        user_id: user.userId,
+        userId: user.userId,
         email: user.email,
         role: user.role,
         firstName: user.firstName, 

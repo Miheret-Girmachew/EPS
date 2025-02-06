@@ -1,4 +1,3 @@
-// InstructorDashboard.jsx
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
@@ -6,62 +5,101 @@ import { Button } from "../components/ui/Button";
 const InstructorDashboard = ({ user }) => {
   const [batches, setBatches] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [forceUpdate, setForceUpdate] = useState(0); // Force re-render
   const batchesPerPage = 5;
 
   useEffect(() => {
-    if (user) fetchBatches(user.userId);
-  }, [user]);
+    console.log("useEffect triggered, user:", user); // DEBUGGING: Check user object
+    // TEMPORARY WORKAROUND: Use user.userID if user.userId is undefined
+    const actualUserId = user && (user.userId || user.userID);
+    console.log("Actual User ID:", actualUserId); //DEBUGGING: Check actual userId
+    if (user && actualUserId) fetchBatches(actualUserId);
+  }, [user]); // forceUpdate is REMOVED from the dependency array!
 
   const fetchBatches = async (userId) => {
+    console.log("fetchBatches called with userId:", userId); // DEBUGGING: Check userId
+    setLoading(true);
+    setError(null);
     try {
       const response = await fetch("http://localhost:7550/api/batches/all");
-
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
       const data = await response.json();
 
-      // Process batches and filter groups
-      const batchesWithFilteredGroups = data.map((batch) => {
+      const filteredBatches = data.map((batch) => {
+        console.log("batch:", batch); // DEBUGGING: Inspect the raw batch data
         let groups = [];
-
         try {
-          // Parse the groups string
-          const groupsString = JSON.parse(batch.groups); // Correctly parse the doubly encoded JSON
-          groups = JSON.parse(groupsString);
-
+          groups = JSON.parse(JSON.parse(batch.groups)); // Correct double parsing
         } catch (error) {
           console.error("Error parsing groups:", error);
-          groups = []; // Handle error by setting an empty groups array
+          return null; // Skip batch on parsing error
         }
 
-        // Filter groups to only include those where the instructor is present
-        const filteredGroups = groups.filter(group => {
-          return group.instructors && Array.isArray(group.instructors) && group.instructors.includes(userId);
-        }).map(group => ({
-          ...group,
-          id: group.groupName, // Use groupName as ID
-        }));
+        let instructorIds = [];
+        try {
+          instructorIds = JSON.parse(JSON.parse(batch.instructorNames || "[]"));
+          if (!Array.isArray(instructorIds)) {
+            console.warn("instructorNames is not an array, skipping batch", batch);
+            return null;
+          }
+        } catch (error) {
+          console.error("Error parsing instructorNames:", error);
+          return null; // Skip batch on parsing error
+        }
 
-        const instructorIds = JSON.parse(batch.instructorNames || "[]")
+        const isInstructorInBatch = instructorIds.includes(userId);
+        if (!isInstructorInBatch) return null;
 
-        return {
-          ...batch,
-          groups: filteredGroups,
-          isInstructorInBatch: instructorIds.includes(userId)
-        };
-      });
+        const filteredGroups = groups.filter((group) =>
+          Array.isArray(group.instructors) && group.instructors.includes(userId)
+        );
 
-      setBatches(batchesWithFilteredGroups.sort((a, b) => a.batchName.localeCompare(b.batchName)));
+        return filteredGroups.length > 0 ? { ...batch, groups: filteredGroups } : null;
+      }).filter(Boolean);
+
+      setBatches(filteredBatches.sort((a, b) => a.batchName.localeCompare(b.batchName)));
     } catch (error) {
       console.error("Error fetching batches:", error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
-  
 
   const indexOfLastBatch = currentPage * batchesPerPage;
   const currentBatches = batches.slice(indexOfLastBatch - batchesPerPage, indexOfLastBatch);
+
+  const showBatches = () => {
+    if (loading) return <p>Loading batches...</p>;
+    if (error) return <p className="text-red-500">Error: {error}</p>;
+
+    if (batches.length === 0) {
+      return <p>No batches found for you as an instructor.</p>;
+    }
+
+    return currentBatches.map((batch) => (
+      <Card key={batch.batchId} className="mb-4 p-4">
+        <CardContent>
+          <h2 className="text-lg font-semibold">{batch.batchName}</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {batch.groups.length === 0 ? (
+              <p>No groups found for this batch.</p>
+            ) : (
+              batch.groups.map((group) => (
+                <div key={group.groupName} className="bg-gray-100 p-4 rounded-lg shadow-md">
+                  <h3 className="font-semibold">{group.groupName}</h3>
+                </div>
+              ))
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    ));
+  };
 
   return (
     <div>
@@ -75,28 +113,7 @@ const InstructorDashboard = ({ user }) => {
       </div>
 
       <div className="mt-6">
-        {batches.length === 0 ? (
-          <p>No batches found for you as an instructor.</p>
-        ) : (
-          currentBatches.map((batch) => (
-            <Card key={batch.batchId} className="mb-4 p-4">
-              <CardContent>
-                <h2 className="text-lg font-semibold">{batch.batchName}</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {batch.groups.length === 0 ? (
-                    <p>No groups found for this batch.</p>
-                  ) : (
-                    batch.groups.map((group) => (
-                      <div key={group.id} className="bg-gray-100 p-4 rounded-lg shadow-md">
-                        <h3 className="font-semibold">{group.groupName}</h3>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
+        {showBatches()}
       </div>
 
       {batches.length > batchesPerPage && (
