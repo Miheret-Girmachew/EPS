@@ -20,8 +20,12 @@ function App() {
   const location = useLocation();
   const isLoginPage = location.pathname === '/';
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    const token = localStorage.getItem('token');
+    return !!token; // Return true if token exists, false otherwise
+  });
+  const [user, setUser] = useState(null); // Initial value is null
+  const [isLoading, setIsLoading] = useState(true); // Add loading state
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -33,14 +37,17 @@ function App() {
       } catch (error) {
         localStorage.removeItem('token');
         setIsAuthenticated(false);
+        setUser(null);
       }
     } else {
       setIsAuthenticated(false);
+      setUser(null);
     }
+    setIsLoading(false); // Set loading to false after checking token
   }, []);
 
   useEffect(() => {
-    if (isAuthenticated && isLoginPage) {
+    if (!isLoading && isAuthenticated && isLoginPage) {
       const token = localStorage.getItem('token');
       const decodedToken = token ? jwtDecode(token) : null;
       const role = decodedToken?.role;
@@ -53,7 +60,11 @@ function App() {
         navigate('/student');
       }
     }
-  }, [isAuthenticated, isLoginPage, navigate]);
+  }, [isAuthenticated, isLoginPage, navigate, isLoading]);
+
+  if (isLoading) {
+    return <div>Loading...</div>; // Or a more appropriate loading indicator
+  }
 
   return (
     <>

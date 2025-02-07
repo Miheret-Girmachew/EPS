@@ -2,6 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import InstructorSide from "../components/InstructorSide";
 import InstructorDashboard from "./InstructorDashboard";
+import Students from "../components/Students/Students";
 
 function Instructor({ user }) {
   return (
@@ -14,7 +15,7 @@ function Instructor({ user }) {
         <Routes>
         <Route path="" element={<InstructorDashboard user={user} />} />
           <Route path="my-courses" element={<div>My Courses Content Here</div>} />
-          <Route path="students" element={<div>Students Content Here</div>} />
+          <Route path="students" element={<Students />} />
           <Route path="payout" element={<div>Payout Content Here</div>} />
         </Routes>
       </main>
