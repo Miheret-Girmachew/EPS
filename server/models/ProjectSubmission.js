@@ -58,6 +58,12 @@ module.exports = (sequelize, DataTypes) => {
           isUrl: true,
         },
       },
+      // ADD THE STATUS FIELD HERE
+      status: {
+        type: DataTypes.ENUM("pending", "well done", "has problems"),
+        allowNull: false,
+        defaultValue: "pending",
+      },
       timestamp: {
         type: DataTypes.DATE,
         allowNull: false,

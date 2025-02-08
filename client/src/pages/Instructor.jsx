@@ -2,7 +2,7 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import InstructorSide from "../components/InstructorSide";
 import InstructorDashboard from "./InstructorDashboard";
-import Students from "../components/Students/Students";
+import Students from "../components/GroupStudents/GroupStudents";
 
 function Instructor({ user }) {
   return (

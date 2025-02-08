@@ -57,9 +57,7 @@ const InstructorSide = ({ user }) => {
       <nav className="mt-6 space-y-2">
         {[
           { path: "/instructor", label: "Dashboard", Icon: Home },
-          { path: "/instructor/my-courses", label: "My Courses", Icon: BookOpen },
-          { path: "/instructor/students", label: "Students", Icon: Users },
-          { path: "/instructor/payout", label: "Payout", Icon: DollarSign },
+          { path: "/instructor/certificate", label: "certificate", Icon: BookOpen },
         ].map(({ path, label, Icon }) => (
           <Link
             key={path}

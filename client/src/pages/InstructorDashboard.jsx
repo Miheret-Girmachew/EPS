@@ -1,25 +1,26 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
+import { useNavigate } from "react-router-dom";
 
 const InstructorDashboard = ({ user }) => {
   const [batches, setBatches] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [forceUpdate, setForceUpdate] = useState(0); // Force re-render
+  const [forceUpdate, setForceUpdate] = useState(0);
   const batchesPerPage = 5;
+  const navigate = useNavigate();
 
   useEffect(() => {
-    console.log("useEffect triggered, user:", user); // DEBUGGING: Check user object
-    // TEMPORARY WORKAROUND: Use user.userID if user.userId is undefined
+    console.log("useEffect triggered, user:", user);
     const actualUserId = user && (user.userId || user.userID);
-    console.log("Actual User ID:", actualUserId); //DEBUGGING: Check actual userId
+    console.log("Actual User ID:", actualUserId);
     if (user && actualUserId) fetchBatches(actualUserId);
-  }, [user]); // forceUpdate is REMOVED from the dependency array!
+  }, [user]);
 
   const fetchBatches = async (userId) => {
-    console.log("fetchBatches called with userId:", userId); // DEBUGGING: Check userId
+    console.log("fetchBatches called with userId:", userId);
     setLoading(true);
     setError(null);
     try {
@@ -29,37 +30,47 @@ const InstructorDashboard = ({ user }) => {
       }
       const data = await response.json();
 
-      const filteredBatches = data.map((batch) => {
-        console.log("batch:", batch); // DEBUGGING: Inspect the raw batch data
-        let groups = [];
-        try {
-          groups = JSON.parse(JSON.parse(batch.groups)); // Correct double parsing
-        } catch (error) {
-          console.error("Error parsing groups:", error);
-          return null; // Skip batch on parsing error
-        }
-
-        let instructorIds = [];
-        try {
-          instructorIds = JSON.parse(JSON.parse(batch.instructorNames || "[]"));
-          if (!Array.isArray(instructorIds)) {
-            console.warn("instructorNames is not an array, skipping batch", batch);
+      const filteredBatches = data
+        .map((batch) => {
+          let groups = [];
+          try {
+            groups = JSON.parse(JSON.parse(batch.groups));
+          } catch (error) {
+            console.error("Error parsing groups:", error);
             return null;
           }
-        } catch (error) {
-          console.error("Error parsing instructorNames:", error);
-          return null; // Skip batch on parsing error
-        }
 
-        const isInstructorInBatch = instructorIds.includes(userId);
-        if (!isInstructorInBatch) return null;
+          let instructorIds = [];
+          try {
+            instructorIds = JSON.parse(
+              JSON.parse(batch.instructorNames || "[]")
+            );
+            if (!Array.isArray(instructorIds)) {
+              console.warn(
+                "instructorNames is not an array, skipping batch",
+                batch
+              );
+              return null;
+            }
+          } catch (error) {
+            console.error("Error parsing instructorNames:", error);
+            return null;
+          }
 
-        const filteredGroups = groups.filter((group) =>
-          Array.isArray(group.instructors) && group.instructors.includes(userId)
-        );
+          const isInstructorInBatch = instructorIds.includes(userId);
+          if (!isInstructorInBatch) return null;
 
-        return filteredGroups.length > 0 ? { ...batch, groups: filteredGroups } : null;
-      }).filter(Boolean);
+          const filteredGroups = groups.filter(
+            (group) =>
+              Array.isArray(group.instructors) &&
+              group.instructors.includes(userId)
+          );
+
+          return filteredGroups.length > 0
+            ? { ...batch, groups: filteredGroups }
+            : null;
+        })
+        .filter(Boolean);
 
       setBatches(filteredBatches.sort((a, b) => a.batchName.localeCompare(b.batchName)));
     } catch (error) {
@@ -70,8 +81,15 @@ const InstructorDashboard = ({ user }) => {
     }
   };
 
+  const handleGroupClick = (batchName, groupName) => {
+    navigate(`/instructor/group-students/${batchName}/${groupName}`);
+  };
+
   const indexOfLastBatch = currentPage * batchesPerPage;
-  const currentBatches = batches.slice(indexOfLastBatch - batchesPerPage, indexOfLastBatch);
+  const currentBatches = batches.slice(
+    indexOfLastBatch - batchesPerPage,
+    indexOfLastBatch
+  );
 
   const showBatches = () => {
     if (loading) return <p>Loading batches...</p>;
@@ -90,9 +108,14 @@ const InstructorDashboard = ({ user }) => {
               <p>No groups found for this batch.</p>
             ) : (
               batch.groups.map((group) => (
-                <div key={group.groupName} className="bg-gray-100 p-4 rounded-lg shadow-md">
+                <Button
+                  key={group.groupName}
+                  variant="ghost"
+                  className="bg-gray-100 p-4 rounded-lg shadow-md hover:bg-gray-200 cursor-pointer"
+                  onClick={() => handleGroupClick(batch.batchName, group.groupName)}
+                >
                   <h3 className="font-semibold">{group.groupName}</h3>
-                </div>
+                </Button>
               ))
             )}
           </div>
@@ -104,7 +127,9 @@ const InstructorDashboard = ({ user }) => {
   return (
     <div>
       <div className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-6 rounded-lg text-center">
-        <h1 className="text-lg font-semibold">Empower Learners, Elevate Your Impact!</h1>
+        <h1 className="text-lg font-semibold">
+          Empower Learners, Elevate Your Impact!
+        </h1>
         <p>Your guidance makes a difference stay committed and become a top mentor!</p>
       </div>
 
@@ -112,9 +137,7 @@ const InstructorDashboard = ({ user }) => {
         <input type="text" placeholder="Search" className="w-full p-2 border rounded-md" />
       </div>
 
-      <div className="mt-6">
-        {showBatches()}
-      </div>
+      <div className="mt-6">{showBatches()}</div>
 
       {batches.length > batchesPerPage && (
         <div className="mt-6 flex justify-center space-x-2">

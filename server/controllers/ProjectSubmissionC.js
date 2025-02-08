@@ -288,9 +288,6 @@ const updateProjectSubmissionById = async (req, res) => {
 };
 
 
-
-
-
 const deleteProjectSubmissionById = async (req, res) => {
   try {
 
@@ -321,11 +318,44 @@ const deleteProjectSubmissionById = async (req, res) => {
   }
 };
 
+const updateSubmissionStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    // Validate the status value
+    if (!['well done', 'has problems'].includes(status)) {
+      return res.status(400).json({ message: 'Invalid status value' });
+    }
+
+    // Check if the user is an instructor (role 2)
+    if (req.user.role !== '2') {
+      return res.status(403).json({ message: 'Only instructors can update submission status' });
+    }
+
+    // Find the submission by ID
+    const submission = await ProjectSubmission.findOne({ where: { psi_id: id } });
+
+    if (!submission) {
+      return res.status(404).json({ message: 'Project submission not found' });
+    }
+
+    // Update the submission status
+    submission.status = status;
+    await submission.save();
+
+    res.status(200).json({ message: 'Submission status updated successfully', submission });
+  } catch (error) {
+    console.error('Error updating submission status:', error);
+    res.status(500).json({ message: 'Failed to update submission status', error });
+  }
+};
 
 module.exports = {
   createProjectSubmission,
   getProjectSubmissions,
   getAllProjectSubmissions,
   updateProjectSubmissionById,
-  deleteProjectSubmissionById
+  deleteProjectSubmissionById,
+  updateSubmissionStatus // Export the new function
 };

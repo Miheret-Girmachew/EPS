@@ -3,6 +3,7 @@ import { Routes, Route, useLocation, useNavigate, Navigate } from 'react-router-
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import Instructor from './pages/Instructor.jsx';
+import GroupStudents from './components/GroupStudents/GroupStudents.jsx'; // Import the new component
 import StudentDashboard from './pages/StudentDashboard';
 import Dashboard from './pages/Dashboard';
 import Header from './components/Header/Header.jsx';
@@ -81,10 +82,26 @@ function App() {
             }
           />
           <Route
+            path="/instructor"
+            element={
+              <AuthRoute isAuthenticated={isAuthenticated} redirectTo="/">
+                <Instructor user={user} /> {/* Pass the user object */}
+              </AuthRoute>
+            }
+          />
+          <Route
             path="/instructor/*"
             element={
               <AuthRoute isAuthenticated={isAuthenticated} redirectTo="/">
                 <Instructor user={user} /> {/* Pass the user object */}
+              </AuthRoute>
+            }
+          />
+          <Route
+            path="/instructor/group-students/:batchName/:groupName"
+            element={
+              <AuthRoute isAuthenticated={isAuthenticated} redirectTo="/">
+                <GroupStudents user={user} /> {/* Pass the user object */}
               </AuthRoute>
             }
           />

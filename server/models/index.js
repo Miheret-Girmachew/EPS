@@ -19,13 +19,21 @@ fs
     return (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.js');
   })
   .forEach(file => {
-    console.log(file);
+    console.log("Processing models files: ", file); //Let's test each file
+    try {
     const model = require(path.join(__dirname, file))(sequelize, Sequelize.DataTypes);
     db[model.name] = model;
+     console.log("Model successfully loaded: ", file); //Let's test each file
+  } catch (error){
+     console.log("Model loading error: ", file);
+     console.error("Model loading error messages: ", file, error); //Let's test each file
+  }
+
   });
 
 Object.keys(db).forEach(modelName => {
   if (db[modelName].associate) {
+    console.log("Associating Model: " + modelName); // Check association names
     db[modelName].associate(db);
   }
 });
