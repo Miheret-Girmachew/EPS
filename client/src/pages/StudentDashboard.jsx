@@ -17,25 +17,25 @@ const images = [
 ];
 
 const StudentDashboard = () => {
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const handleSlideChange = (swiper) => {
-      setCurrentImageIndex(swiper.realIndex);
-    };
-    const [showSubmitProjectPopUp, setShowSubmitProjectPopUp] = useState(false);
-      const navigate = useNavigate();
-
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/", { replace: true }); // Use replace:true for logout
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const handleSlideChange = (swiper) => {
+    setCurrentImageIndex(swiper.realIndex);
   };
+  const [showSubmitProjectPopUp, setShowSubmitProjectPopUp] = useState(false);
+    const navigate = useNavigate();
 
-    const handleShowSubmitProjectPopUp = () => {
-        setShowSubmitProjectPopUp(true);
-      };
-       const handleHideSubmitProjectPopUp = () => {
-         setShowSubmitProjectPopUp(false);
-      };
+
+const handleLogout = () => {
+  localStorage.removeItem("token");
+  navigate("/", { replace: true }); // Use replace:true for logout
+};
+
+  const handleShowSubmitProjectPopUp = () => {
+      setShowSubmitProjectPopUp(true);
+    };
+     const handleHideSubmitProjectPopUp = () => {
+       setShowSubmitProjectPopUp(false);
+    };
 
     const handleViewSubmitedProjects = () =>{
          navigate("/submitted-projects");

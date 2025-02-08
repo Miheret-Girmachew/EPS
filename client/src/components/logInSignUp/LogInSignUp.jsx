@@ -9,7 +9,7 @@ function LogInSignUp() {
     const [loading, setLoading] = useState(false);
     const [loginError, setLoginError] = useState("");
     const [registerError, setRegisterError] = useState("");
-     const [showForgotPassword, setShowForgotPassword] = useState(false);
+    const [showForgotPassword, setShowForgotPassword] = useState(false);
     const [formDataLogin, setFormDataLogin] = useState({
         email: "",
         password: "",
@@ -44,10 +44,11 @@ function LogInSignUp() {
 
                 const data = await response.json();
                 console.log("Fetched Batches Data:", data);
+                 // Changed group handling since the groups come in json format now
 
                 const updatedBatchesData = data.map(batch => ({
                     ...batch,
-                    groups: Array.isArray(batch.groups) ? batch.groups : []
+                    groups:  JSON.parse(JSON.parse(batch.groups))
                 }));
 
                 setBatches(updatedBatchesData);
@@ -60,7 +61,6 @@ function LogInSignUp() {
         fetchBatches();
     }, []);
 
-
     useEffect(() => {
         const fetchGroups = async () => {
             if (!formDataRegister.batch) {
@@ -68,26 +68,26 @@ function LogInSignUp() {
                 return;
             }
 
-            try {
-                const response = await fetch(
-                    `http://localhost:7550/api/batches/${formDataRegister.batch}/groups`
-                );
-                if (!response.ok) throw new Error(`Failed to fetch groups: ${response.status}`);
+            const selectedBatch = batches.find(batch => batch.batchId === formDataRegister.batch);
 
-                const data = await response.json();
-                console.log("Fetched Groups Data:", data);
-
-                setGroups(Array.isArray(data) ? data : data.groups || []);
-            } catch (error) {
-                console.error("Error fetching groups:", error);
+            if (selectedBatch) {
+                console.log("Selected Batch:", selectedBatch);
+                try {
+                    // Now the groups are in bach.groups
+                    const parsedGroups = Array.isArray(selectedBatch.groups) ? selectedBatch.groups : [];
+                    console.log("Fetched Groups Data:", parsedGroups);
+                    setGroups(parsedGroups);
+                } catch (error) {
+                    console.error("Error processing groups:", error);
+                    setGroups([]);
+                }
+            } else {
                 setGroups([]);
             }
         };
 
         fetchGroups();
-    }, [formDataRegister.batch]);
-
-
+    }, [formDataRegister.batch, batches]);
 
     const handleLoginInputChange = (e) => {
         const { name, value } = e.target;
@@ -99,10 +99,9 @@ function LogInSignUp() {
         setFormDataRegister({ ...formDataRegister, [name]: value });
     };
 
-     const handleForgotPasswordClick = () => {
-       setShowForgotPassword(true);
-      };
-
+    const handleForgotPasswordClick = () => {
+        setShowForgotPassword(true);
+    };
 
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
@@ -119,9 +118,9 @@ function LogInSignUp() {
             });
             const contentType = response.headers.get("Content-Type");
             if (!response.ok || !contentType || !contentType.includes("application/json")) {
-                  const text = await response.text();
-                  console.error("Expected JSON but got:", text);
-                 throw new Error(`Server error, please try again later!`);
+                const text = await response.text();
+                console.error("Expected JSON but got:", text);
+                throw new Error(`Server error, please try again later!`);
             }
             const data = await response.json();
             localStorage.setItem("token", data.token);
@@ -140,15 +139,14 @@ function LogInSignUp() {
                     navigate('/dashboard');
             }
         } catch (error) {
-             console.error("Login error:", error.message);
+            console.error("Login error:", error.message);
             setLoginError(
                 error.message || "Invalid email or password, please try again."
-             );
+            );
         } finally {
             setLoading(false);
         }
     };
-
 
     const handleRegisterSubmit = async (e) => {
         e.preventDefault();
@@ -163,23 +161,23 @@ function LogInSignUp() {
                 },
                 body: JSON.stringify(formDataRegister),
             });
-             const contentType = response.headers.get("Content-Type");
+            const contentType = response.headers.get("Content-Type");
             if (!response.ok || !contentType || !contentType.includes("application/json")) {
-                  const text = await response.text();
-                  console.error("Expected JSON but got:", text);
-                 throw new Error(`Server error, please try again later!`);
-              }
+                const text = await response.text();
+                console.error("Expected JSON but got:", text);
+                throw new Error(`Server error, please try again later!`);
+            }
 
             const data = await response.json();
 
-             if (!response.ok) {
-                 if (data && data.errors) {
-                     setRegisterError(data.errors.join(". "));
-                 } else if (data && data.message) {
-                   setRegisterError(data.message);
-                 } else {
-                     setRegisterError("Registration failed, please try again later!");
-                  }
+            if (!response.ok) {
+                if (data && data.errors) {
+                    setRegisterError(data.errors.join(". "));
+                } else if (data && data.message) {
+                    setRegisterError(data.message);
+                } else {
+                    setRegisterError("Registration failed, please try again later!");
+                }
             } else {
                 console.log("User registered successfully:", data);
                 setFormDataRegister({
@@ -212,239 +210,235 @@ function LogInSignUp() {
                 }
             }
         } catch (error) {
-           console.error("Registration error:", error.message);
-             setRegisterError(
+            console.error("Registration error:", error.message);
+            setRegisterError(
                 error.message || "An error occurred during registration. Please try again."
-              );
+            );
         } finally {
             setLoading(false);
         }
     };
 
-
-
     return (
         <div className="loginSignUp">
             <div id="carouselExample" className="carousel slide">
-                 {showForgotPassword ? (
-                   <ForgotPassword setShowForgotPassword={setShowForgotPassword} />
-                  ) : (
-                   <div className="carousel-inner">
-                    <div className="carousel-item active">
-                        <div className="login">
-                            <h5>Login to your account</h5>
-                            {loginError && <div className="error-message">{loginError}</div>}
+                {showForgotPassword ? (
+                    <ForgotPassword setShowForgotPassword={setShowForgotPassword}/>
+                ) : (
+                    <div className="carousel-inner">
+                        <div className="carousel-item active">
+                            <div className="login">
+                                <h5>Login to your account</h5>
+                                {loginError && <div className="error-message">{loginError}</div>}
 
-                            <div>
-                                Don’t have an account?{" "}
-                                <span
-                                    type="button"
-                                    data-bs-target="#carouselExample"
-                                    data-bs-slide="prev"
-                                >
-                                    Create a new account
-                                </span>
-                            </div>
-                            <form onSubmit={handleLoginSubmit} className="">
-                                <div className="form-input">
-                                    <input
-                                        name="email"
-                                        type="email"
-                                        placeholder="Email address"
-                                        value={formDataLogin.email}
-                                        onChange={handleLoginInputChange}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-input password">
-                                    <input
-                                        name="password"
-                                        type={show ? "text" : "password"}
-                                        placeholder="Password"
-                                        value={formDataLogin.password}
-                                        onChange={handleLoginInputChange}
-                                        required
-                                    />
-                                    <span
-                                        onClick={() => {
-                                            setShow((show) => !show);
-                                        }}
-                                    >
-                                        {show ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
-                                    </span>
-                                </div>
-                                <div className="forgot">
-                                     <span onClick={handleForgotPasswordClick}>Forgot password?</span>
-                                </div>
-                                <div className="btn-login">
-                                    <button
-                                        disabled={loading}
-                                        className={loading ? "disabled" : ""}
-                                        type="submit"
-                                    >
-                                        Login
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                    <div className="carousel-item ">
-                        <div className="register">
-                            <h5>Join the network</h5>
-                            {registerError && <div className="error-message">{registerError}</div>}
-                            <div>
-                                Already have an account?{" "}
-                                <span
-                                    type="button"
-                                    data-bs-target="#carouselExample"
-                                    data-bs-slide="next"
-                                >
-                                    Sign in
-                                </span>
-                            </div>
-                            <form onSubmit={handleRegisterSubmit}>
-
-                                <div className="row">
-                                    <div className="form-input col-md-6 ">
-                                        <input
-                                            name="firstName"
-                                            className=""
-                                            type="text"
-                                            placeholder="First name"
-                                            value={formDataRegister.firstName}
-                                            onChange={handleRegisterInputChange}
-                                            required
-                                        />
-                                    </div>
-                                    <div className="form-input col-md-6">
-                                        <input
-                                            name="lastName"
-                                            className=""
-                                            type="text"
-                                            placeholder="Last name"
-                                            value={formDataRegister.lastName}
-                                            onChange={handleRegisterInputChange}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                                <div className="form-input">
-                                    <input
-                                        name="email"
-                                        type="email"
-                                        placeholder="Email address"
-                                        value={formDataRegister.email}
-                                        onChange={handleRegisterInputChange}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-input password">
-                                    <input
-                                        name="password"
-                                        type={show ? "text" : "password"}
-                                        placeholder="Password"
-                                        value={formDataRegister.password}
-                                        onChange={handleRegisterInputChange}
-                                        required
-                                    />
-                                    <span
-                                        onClick={() => {
-                                            setShow((show) => !show);
-                                        }}
-                                    >
-                                        {show ? <AiOutlineEye /> : <AiOutlineEyeInvisible />}
-                                    </span>
-                                </div>
-                                <div className="form-input">
-                                    <select
-                                        name="secretQuestion"
-                                        value={formDataRegister.secretQuestion}
-                                        onChange={handleRegisterInputChange}
-                                        required
-                                    >
-                                        <option value="" disabled>Select a secret question</option>
-                                        {secretQuestions.map((question, index) => (
-                                            <option key={index} value={question}>{question}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="form-input">
-                                    <input
-                                        name="secretAnswer"
-                                        type="text"
-                                        placeholder="Secret Answer"
-                                        value={formDataRegister.secretAnswer}
-                                        onChange={handleRegisterInputChange}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-input">
-                                    <select
-                                        name="batch"
-                                        value={formDataRegister.batch}
-                                        onChange={handleRegisterInputChange}
-                                        required
-                                    >
-                                        <option value="" disabled>Select a batch</option>
-                                        {batches && batches.map((batch) => (
-                                            <option key={batch.batchId} value={batch.batchId}>
-                                                {batch.batchName}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="form-input">
-                                    <select
-                                        name="group"
-                                        value={formDataRegister.group}
-                                        onChange={handleRegisterInputChange}
-                                        required
-                                    >
-                                        <option value="" disabled>Select a group</option>
-                                        {groups.length > 0 ? (
-                                            groups.map((group, index) => (
-                                                <option key={index} value={group.groupName}>
-                                                    {group.groupName}
-                                                </option>
-                                            ))
-                                        ) : (
-                                            <option disabled>No groups available</option>
-                                        )}
-                                    </select>
-                                </div>
-
-
-                                <div className="privacy">
-                                    I agree to the <a href="">privacy policy</a> and{" "}
-                                    <a href="">terms of service</a>.
-                                </div>
-                                <div className="btn-register">
-                                    <button
-                                        disabled={loading}
-                                        className={loading ? "disabled" : ""}
-                                        type="submit"
-                                    >
-                                        Agree and Join
-                                    </button>
-                                </div>
                                 <div>
+                                    Don’t have an account?{" "}
+                                    <span
+                                        type="button"
+                                        data-bs-target="#carouselExample"
+                                        data-bs-slide="prev"
+                                    >
+                                        Create a new account
+                                    </span>
+                                </div>
+                                <form onSubmit={handleLoginSubmit} className="">
+                                    <div className="form-input">
+                                        <input
+                                            name="email"
+                                            type="email"
+                                            placeholder="Email address"
+                                            value={formDataLogin.email}
+                                            onChange={handleLoginInputChange}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-input password">
+                                        <input
+                                            name="password"
+                                            type={show ? "text" : "password"}
+                                            placeholder="Password"
+                                            value={formDataLogin.password}
+                                            onChange={handleLoginInputChange}
+                                            required
+                                        />
+                                        <span
+                                            onClick={() => {
+                                                setShow((show) => !show);
+                                            }}
+                                        >
+                                        {show ? <AiOutlineEye/> : <AiOutlineEyeInvisible/>}
+                                    </span>
+                                    </div>
+                                    <div className="forgot">
+                                        <span onClick={handleForgotPasswordClick}>Forgot password?</span>
+                                    </div>
+                                    <div className="btn-login">
+                                        <button
+                                            disabled={loading}
+                                            className={loading ? "disabled" : ""}
+                                            type="submit"
+                                        >
+                                            Login
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                        <div className="carousel-item ">
+                            <div className="register">
+                                <h5>Join the network</h5>
+                                {registerError && <div className="error-message">{registerError}</div>}
+                                <div>
+                                    Already have an account?{" "}
                                     <span
                                         type="button"
                                         data-bs-target="#carouselExample"
                                         data-bs-slide="next"
                                     >
-                                        Already have an account?
+                                        Sign in
                                     </span>
                                 </div>
-                            </form>
+                                <form onSubmit={handleRegisterSubmit}>
+
+                                    <div className="row">
+                                        <div className="form-input col-md-6 ">
+                                            <input
+                                                name="firstName"
+                                                className=""
+                                                type="text"
+                                                placeholder="First name"
+                                                value={formDataRegister.firstName}
+                                                onChange={handleRegisterInputChange}
+                                                required
+                                            />
+                                        </div>
+                                        <div className="form-input col-md-6">
+                                            <input
+                                                name="lastName"
+                                                className=""
+                                                type="text"
+                                                placeholder="Last name"
+                                                value={formDataRegister.lastName}
+                                                onChange={handleRegisterInputChange}
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="form-input">
+                                        <input
+                                            name="email"
+                                            type="email"
+                                            placeholder="Email address"
+                                            value={formDataRegister.email}
+                                            onChange={handleRegisterInputChange}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-input password">
+                                        <input
+                                            name="password"
+                                            type={show ? "text" : "password"}
+                                            placeholder="Password"
+                                            value={formDataRegister.password}
+                                            onChange={handleRegisterInputChange}
+                                            required
+                                        />
+                                        <span
+                                            onClick={() => {
+                                                setShow((show) => !show);
+                                            }}
+                                        >
+                                        {show ? <AiOutlineEye/> : <AiOutlineEyeInvisible/>}
+                                    </span>
+                                    </div>
+                                    <div className="form-input">
+                                        <select
+                                            name="secretQuestion"
+                                            value={formDataRegister.secretQuestion}
+                                            onChange={handleRegisterInputChange}
+                                            required
+                                        >
+                                            <option value="" disabled>Select a secret question</option>
+                                            {secretQuestions.map((question, index) => (
+                                                <option key={index} value={question}>{question}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-input">
+                                        <input
+                                            name="secretAnswer"
+                                            type="text"
+                                            placeholder="Secret Answer"
+                                            value={formDataRegister.secretAnswer}
+                                            onChange={handleRegisterInputChange}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-input">
+                                        <select
+                                            name="batch"
+                                            value={formDataRegister.batch}
+                                            onChange={handleRegisterInputChange}
+                                            required
+                                        >
+                                            <option value="" disabled>Select a batch</option>
+                                            {batches && batches.map((batch) => (
+                                                <option key={batch.batchId} value={batch.batchId}>
+                                                    {batch.batchName}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-input">
+                                        <select
+                                            name="group"
+                                            value={formDataRegister.group}
+                                            onChange={handleRegisterInputChange}
+                                            required
+                                        >
+                                            <option value="" disabled>Select a group</option>
+                                            {groups && groups.length > 0 ? (
+                                                groups.map((group, index) => (
+                                                    <option key={group.groupName} value={group.groupName}>
+                                                        {group.groupName}
+                                                    </option>
+                                                ))
+                                            ) : (
+                                                <option disabled>No groups available</option>
+                                            )}
+                                        </select>
+                                    </div>
+
+                                    <div className="privacy">
+                                        I agree to the <a href="">privacy policy</a> and{" "}
+                                        <a href="">terms of service</a>.
+                                    </div>
+                                    <div className="btn-register">
+                                        <button
+                                            disabled={loading}
+                                            className={loading ? "disabled" : ""}
+                                            type="submit"
+                                        >
+                                            Agree and Join
+                                        </button>
+                                    </div>
+                                    <div>
+                                        <span
+                                            type="button"
+                                            data-bs-target="#carouselExample"
+                                            data-bs-slide="next"
+                                        >
+                                            Already have an account?
+                                        </span>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
-                   </div>
-                   )}
+                )}
             </div>
         </div>
     );
 }
-
 
 export default LogInSignUp;

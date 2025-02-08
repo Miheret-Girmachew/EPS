@@ -10,16 +10,22 @@ const authenticateToken = async (req, res, next) => {
     return res.status(401).json({ message: 'No token, authorization denied' });
   }
 
-  jwt.verify(token, process.env.SECRET_KEY, async (err, user) => {
+  jwt.verify(token, process.env.SECRET_KEY, async (err, decodedUser) => {
     if (err) {
       console.log('Token is not valid:', err.message);
       return res.status(403).json({ message: 'Token is not valid', error: err.message });
     }
 
-    // Log the decoded user object
-    console.log("Decoded user from token:", user);
+    console.log("Decoded JWT payload:", decodedUser);
 
-    req.user = user;
+    // Use `userId` instead of `user_id`
+    const dbUser = await User.findOne({ where: { userId: decodedUser.userId } });
+
+    if (!dbUser) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    req.user = dbUser;
     next();
   });
 };

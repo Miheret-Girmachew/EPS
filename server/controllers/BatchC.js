@@ -11,13 +11,17 @@ const createBatch = async (req, res) => {
       return res.status(400).json({ message: 'Batch with the same name already exists' });
     }
 
-    // Include instructorIds as an empty array when creating a new batch
+    if (!req.user || !req.user.userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+
+    // Use `userId` instead of `user_id`
     const batch = await Batch.create({ 
       batchName,
-      user_id: req.user.user_id,
-      instructorIds: [],  // Make sure instructorIds is always an empty array on creation
+      userId: req.user.userId,  // ✅ Correct field
+      instructorIds: [],  
     });
-    
+
     console.log('Batch created:', batch);
     res.json(batch);
   } catch (err) {
@@ -29,6 +33,7 @@ const createBatch = async (req, res) => {
     });
   }
 };
+
 
 
 const getBatchById = async (req, res) => {

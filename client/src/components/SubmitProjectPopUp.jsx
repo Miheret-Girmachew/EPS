@@ -3,6 +3,7 @@ import axios from 'axios';
 import {jwtDecode} from 'jwt-decode';
 
 const SubmitProjectPopUp = ({ setShowSubmitProjectPopUp }) => {
+    console.log("SubmitProjectPopUp component is rendered");
     const [projects, setProjects] = useState([]);
     const [selectedProject, setSelectedProject] = useState('');
     const [githubLink, setGithubLink] = useState("");
@@ -18,6 +19,7 @@ const SubmitProjectPopUp = ({ setShowSubmitProjectPopUp }) => {
 
     useEffect(() => {
         const fetchProjects = async (batchId) => {
+            console.log(`fetchProjects called with batchId: ${batchId}`);
             try {
                 const response = await axios.get(`http://localhost:7550/api/projects/batch/${batchId}`, {
                     headers: { Authorization: `Bearer ${token}` },
@@ -32,6 +34,7 @@ const SubmitProjectPopUp = ({ setShowSubmitProjectPopUp }) => {
     
         const fetchUserDetails = async () => {
             try {
+                console.log("Fetching user details for userId:", userId);
                 const response = await axios.get(`http://localhost:7550/api/users/${userId}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
@@ -40,7 +43,7 @@ const SubmitProjectPopUp = ({ setShowSubmitProjectPopUp }) => {
                 if (response.data.batch && response.data.group) {
                     setBatchId(response.data.batch);
                     setUserGroup(response.data.group);
-                    fetchProjects(response.data.batch); // ✅ Now fetchProjects is accessible
+                    fetchProjects(response.data.batch);
                 } else {
                     setError("Error fetching user details");
                 }
@@ -50,10 +53,10 @@ const SubmitProjectPopUp = ({ setShowSubmitProjectPopUp }) => {
             }
         };
     
-        if (userId) {
+        if (userId && !batchId && !userGroup) {
             fetchUserDetails();
         }
-    }, [userId, token]);
+    }, [userId, token, batchId, userGroup]);
     
     
 

@@ -48,7 +48,7 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && isAuthenticated && isLoginPage) {
+    if (isAuthenticated && isLoginPage) {
       const token = localStorage.getItem('token');
       const decodedToken = token ? jwtDecode(token) : null;
       const role = decodedToken?.role;
@@ -57,8 +57,6 @@ function App() {
         navigate('/admin');
       } else if (role === 2) {
         navigate('/instructor');
-      } else if (role === 3) {
-        navigate('/student');
       }
     }
   }, [isAuthenticated, isLoginPage, navigate, isLoading]);
