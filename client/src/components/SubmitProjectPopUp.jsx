@@ -13,11 +13,16 @@ const SubmitProjectPopUp = ({ setShowSubmitProjectPopUp }) => {
     const [loading, setLoading] = useState(false);
     const token = localStorage.getItem("token");
     const decodedToken = token ? jwtDecode(token) : null;
-    const userId = decodedToken?.user_id;
+    const userId = decodedToken?.userId;
     const [batchId, setBatchId] = useState(null);
     const [userGroup, setUserGroup] = useState(null);
 
     useEffect(() => {
+        console.log("useEffect triggered"); // Add this line
+        console.log("UserId:", userId);
+        console.log("BatchId:", batchId);
+        console.log("UserGroup:", userGroup);
+
         const fetchProjects = async (batchId) => {
             console.log(`fetchProjects called with batchId: ${batchId}`);
             try {
@@ -39,6 +44,8 @@ const SubmitProjectPopUp = ({ setShowSubmitProjectPopUp }) => {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 console.log("User details fetched:", response.data);
+                console.log("Response Data Batch:", response.data.batch); // Log batch
+                console.log("Response Data Group:", response.data.group); // Log group
     
                 if (response.data.batch && response.data.group) {
                     setBatchId(response.data.batch);
@@ -65,6 +72,13 @@ const SubmitProjectPopUp = ({ setShowSubmitProjectPopUp }) => {
         setError("");
         setMessage("");
         setLoading(true);
+
+
+        console.log("selectedProject:", selectedProject);
+    console.log("githubLink:", githubLink);
+    console.log("deploymentLink:", deploymentLink);
+    console.log("userGroup:", userGroup);
+    console.log("batchId:", batchId);
     
         if (!selectedProject || !githubLink || !deploymentLink || !userGroup || !batchId) {
             setError("Please fill all the required fields!");

@@ -137,6 +137,9 @@ const SubmittedProjects = () => {
                         {projects.map((project) => (
                             <div key={project.psi_id}
                                 className="bg-gray-800 p-6 rounded-lg shadow-lg transform hover:scale-105 transition-transform duration-300">
+                                <p className="text-xl font-semibold mb-2 text-center">
+                                    {projectNames[project.project_id]}
+                                </p>
                                 <h3 className="text-xl font-semibold mb-2">{projectNames[project.project_id]}</h3>
                                 <p className="text-gray-300 mb-2">
                                     GitHub: <a href={project.github_link} target="_blank" rel="noopener noreferrer"
@@ -172,6 +175,9 @@ const SubmittedProjects = () => {
                                 </svg>
                             </button>
                             <h3 className="text-2xl font-bold mb-4 text-center text-[#ff8500]">Edit Project</h3>
+                             <p className="text-xl font-semibold mb-2 text-center">
+                                {projectNames[selectedProject.project_id]}
+                             </p> {/* Display the project name */}
                             {error && <div className="text-red-500 mb-3 text-center">{error}</div>}
                             {message && <div className="text-green-500 mb-3 text-center">{message}</div>}
                             <form onSubmit={handleEditSubmit} className="flex flex-col gap-4">

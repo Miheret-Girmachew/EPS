@@ -10,11 +10,11 @@ const createProjectSubmission = async (req, res) => {
     // Log the authenticated user information
     console.log("User from req.user:", req.user);
 
-    // Extracting user_id from authenticated user
-    const { user_id } = req.user; // Ensure user_id is set in JWT payload
+    // Extracting user_id from request body (NOT req.user)
+    const { user_id } = req.body; // ENSURE the JWT token middleware IS POPULATING REQ.USER
 
     // Log the extracted user_id
-    console.log("Extracted user_id from req.user:", user_id);
+    console.log("Extracted user_id from req.body:", user_id);
 
     // Extract fields from request body
     const { batch_id, project_id, github_link, deployment_link, group } = req.body;
@@ -138,10 +138,10 @@ const getProjectSubmissions = async (req, res) => {
 
     // Use the userId from the query if provided, otherwise fallback to authenticated user's ID
     if (!userId) {
-      if (!req.user || !req.user.user_id) {
+      if (!req.user || !req.user.userId) { // Access userId DIRECTLY from req.user
         return res.status(400).json({ message: 'userId is required when not authenticated.' });
       }
-      whereClause.user_id = req.user.user_id; // Use the ID from the authenticated user
+      whereClause.user_id = req.user.userId; // Use the ID from the authenticated user
     } else {
       whereClause.user_id = userId; // Use the userId from the query parameters
     }
@@ -196,8 +196,8 @@ const updateProjectSubmissionById = async (req, res) => {
     console.log("updateProjectSubmissionById function called");
 
     // Extract authenticated user ID
-    const { user_id } = req.user;  // Ensure user_id is set in JWT payload
-    console.log("Authenticated user ID:", user_id);
+    const { userId } = req.user;  // Access userId directly from req.user
+    console.log("Authenticated user ID:", userId);
 
     // Extract submission ID from params
     const { id: submissionId } = req.params;
@@ -224,8 +224,8 @@ const updateProjectSubmissionById = async (req, res) => {
     console.log("Fetched submission:", submission);
 
     // Ensure only the owner can update their submission
-    if (submission.user_id !== user_id) {
-      console.error("Unauthorized update attempt by user:", user_id);
+    if (submission.user_id !== userId) {
+      console.error("Unauthorized update attempt by user:", userId);
       return res.status(403).json({ message: "You do not have permission to update this submission" });
     }
 
