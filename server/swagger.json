@@ -1,0 +1,1953 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "EPS API Documentation",
+    "version": "1.0.0",
+    "description": "API documentation for the Exam Plagiarism System (EPS). Use this to test the endpoints."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "username": {
+            "type": "string",
+            "example": "john_doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "john.doe@example.com"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "student",
+              "instructor",
+              "admin"
+            ],
+            "example": "student"
+          }
+        }
+      },
+      "Batch": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Computer Science 2024"
+          },
+          "year": {
+            "type": "integer",
+            "example": 2024
+          }
+        }
+      },
+      "Project": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "example": "Final Year Project"
+          },
+          "description": {
+            "type": "string",
+            "example": "Build a full-stack application."
+          },
+          "deadline": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2024-12-31T23:59:59Z"
+          }
+        }
+      },
+      "ProjectSubmission": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "submissionUrl": {
+            "type": "string",
+            "example": "https://github.com/user/repo"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "submitted",
+              "graded",
+              "late",
+              "needs_revision"
+            ],
+            "example": "submitted"
+          },
+          "grade": {
+            "type": "integer",
+            "nullable": true,
+            "example": 95
+          },
+          "feedback": {
+            "type": "string",
+            "nullable": true,
+            "example": "Great work!"
+          },
+          "userId": {
+            "type": "integer"
+          },
+          "projectId": {
+            "type": "integer"
+          }
+        }
+      },
+      "Certificate": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "studentId": {
+            "type": "integer",
+            "example": 15
+          },
+          "certificateGroupId": {
+            "type": "integer",
+            "example": 3
+          },
+          "grantedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/api/batches/create": {
+      "post": {
+        "summary": "Create a new batch",
+        "tags": [
+          "Batches"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "year"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the batch.",
+                    "example": "Fall 2024 Computer Science"
+                  },
+                  "year": {
+                    "type": "integer",
+                    "description": "The academic year of the batch.",
+                    "example": 2024
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Batch created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Batch"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request, invalid input."
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        }
+      }
+    },
+    "/api/batches/get/{id}": {
+      "get": {
+        "summary": "Get a single batch by its ID",
+        "tags": [
+          "Batches"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The numeric ID of the batch to retrieve."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single batch object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Batch"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Batch not found."
+          }
+        }
+      }
+    },
+    "/api/batches/all": {
+      "get": {
+        "summary": "Get a list of all batches",
+        "tags": [
+          "Batches"
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of batch objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Batch"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/batches/update/{id}": {
+      "patch": {
+        "summary": "Update an existing batch",
+        "tags": [
+          "Batches"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the batch to update."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Spring 2025 Computer Science"
+                  },
+                  "year": {
+                    "type": "integer",
+                    "example": 2025
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Batch updated successfully."
+          },
+          "400": {
+            "description": "Bad request."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Batch not found."
+          }
+        }
+      }
+    },
+    "/api/batches/delete/{id}": {
+      "delete": {
+        "summary": "Delete a batch by its ID",
+        "tags": [
+          "Batches"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the batch to delete."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Batch deleted successfully."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Batch not found."
+          }
+        }
+      }
+    },
+    "/api/batches/add/{batchId}/groups": {
+      "post": {
+        "summary": "Add a new group to a specific batch",
+        "tags": [
+          "Batches"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "batchId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the batch to add a group to."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "groupName",
+                  "members"
+                ],
+                "properties": {
+                  "groupName": {
+                    "type": "string",
+                    "example": "Group Alpha"
+                  },
+                  "members": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "description": "An array of user IDs for the group members.",
+                    "example": [
+                      10,
+                      15,
+                      22
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Group added successfully."
+          },
+          "400": {
+            "description": "Bad request (e.g., group already exists)."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Batch not found."
+          }
+        }
+      }
+    },
+    "/api/batches/{batchId}/groups/{groupName}": {
+      "delete": {
+        "summary": "Remove a specific group from a batch",
+        "tags": [
+          "Batches"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "batchId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the batch."
+          },
+          {
+            "in": "path",
+            "name": "groupName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The name of the group to remove."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Group removed successfully."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Batch or Group not found."
+          }
+        }
+      }
+    },
+    "/api/batches/up/{id}": {
+      "patch": {
+        "summary": "Update a group within a batch (e.g., change name or members)",
+        "tags": [
+          "Batches"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the batch containing the group."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "groupName": {
+                    "type": "string",
+                    "description": "The current name of the group to update.",
+                    "example": "Group Alpha"
+                  },
+                  "newGroupName": {
+                    "type": "string",
+                    "description": "The new name for the group (optional).",
+                    "example": "Group Omega"
+                  },
+                  "members": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "description": "A new array of user IDs to set as members (optional).",
+                    "example": [
+                      10,
+                      15,
+                      25
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Group updated successfully."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Batch or Group not found."
+          }
+        }
+      }
+    },
+    "/api/batches/{id}/groups": {
+      "get": {
+        "summary": "Get all groups within a specific batch",
+        "tags": [
+          "Batches"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the batch."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of group objects."
+          },
+          "404": {
+            "description": "Batch not found."
+          }
+        }
+      }
+    },
+    "/api/batches/{id}/groups/{groupName}": {
+      "get": {
+        "summary": "Get a specific group by name from a batch",
+        "tags": [
+          "Batches"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the batch."
+          },
+          {
+            "in": "path",
+            "name": "groupName",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The name of the group."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single group object."
+          },
+          "404": {
+            "description": "Batch or Group not found."
+          }
+        }
+      }
+    },
+    "/api/batches/assign-instructor/batch": {
+      "post": {
+        "summary": "Assign an instructor to an entire batch",
+        "tags": [
+          "Batches"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "batchId",
+                  "userId"
+                ],
+                "properties": {
+                  "batchId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "userId": {
+                    "type": "integer",
+                    "description": "The ID of the user (who is an instructor).",
+                    "example": 5
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Instructor assigned successfully."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Batch or User not found."
+          }
+        }
+      }
+    },
+    "/api/batches/assign-instructor/group": {
+      "post": {
+        "summary": "Assign an instructor to a specific group within a batch",
+        "tags": [
+          "Batches"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "batchId",
+                  "groupName",
+                  "userId"
+                ],
+                "properties": {
+                  "batchId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "groupName": {
+                    "type": "string",
+                    "example": "Group Alpha"
+                  },
+                  "userId": {
+                    "type": "integer",
+                    "description": "The ID of the user (who is an instructor).",
+                    "example": 5
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Instructor assigned successfully to group."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Batch, Group, or User not found."
+          }
+        }
+      }
+    },
+    "/api/batches/update-instructors/group": {
+      "patch": {
+        "summary": "Update the list of instructors for a specific group",
+        "tags": [
+          "Batches"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "batchId",
+                  "groupName",
+                  "instructorIds"
+                ],
+                "properties": {
+                  "batchId": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "groupName": {
+                    "type": "string",
+                    "example": "Group Alpha"
+                  },
+                  "instructorIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer"
+                    },
+                    "description": "The complete new list of instructor user IDs for the group.",
+                    "example": [
+                      5,
+                      8
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Instructors for group updated successfully."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Batch or Group not found."
+          }
+        }
+      }
+    },
+    "/api/batches/instructor/{userId}/batches": {
+      "get": {
+        "summary": "Get all batches assigned to a specific instructor",
+        "tags": [
+          "Batches"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the instructor."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of batch objects assigned to the instructor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Batch"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "User not found."
+          }
+        }
+      }
+    },
+    "/api/certificates/add": {
+      "post": {
+        "summary": "Add a student to a certificate group",
+        "tags": [
+          "Certificates"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "studentId",
+                  "certificateGroupId"
+                ],
+                "properties": {
+                  "studentId": {
+                    "type": "integer",
+                    "description": "The ID of the student to be certificated.",
+                    "example": 15
+                  },
+                  "certificateGroupId": {
+                    "type": "integer",
+                    "description": "The ID of the certificate or group they are being added to.",
+                    "example": 3
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Student added to certificate group successfully."
+          },
+          "400": {
+            "description": "Bad request (e.g., student already in group)."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Student or Certificate Group not found."
+          }
+        }
+      }
+    },
+    "/api/certificates/all": {
+      "get": {
+        "summary": "Get all certificated students",
+        "tags": [
+          "Certificates"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of all certificated students.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "integer",
+                        "description": "The unique ID of the certification entry.",
+                        "example": 1
+                      },
+                      "studentId": {
+                        "type": "integer",
+                        "example": 15
+                      },
+                      "certificateGroupId": {
+                        "type": "integer",
+                        "example": 3
+                      },
+                      "grantedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The timestamp when the certificate was granted."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        }
+      }
+    },
+    "/api/certificates/delete/{id}": {
+      "delete": {
+        "summary": "Delete a student's certification record by its ID",
+        "tags": [
+          "Certificates"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The numeric ID of the certification record to delete."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Certification record deleted successfully."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Certification record not found."
+          }
+        }
+      }
+    },
+    "/api/projects/create/batch/{id}": {
+      "post": {
+        "summary": "Create a new project within a specific batch",
+        "tags": [
+          "Projects"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The numeric ID of the batch to which the project will be added."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "title",
+                  "description"
+                ],
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "API Development Project"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Build and document a REST API."
+                  },
+                  "deadline": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2024-12-15T23:59:00Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Project created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g., missing title)."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Batch not found."
+          }
+        }
+      }
+    },
+    "/api/projects/batch/{id}": {
+      "get": {
+        "summary": "Get all projects for a specific batch",
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The numeric ID of the batch."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of projects belonging to the batch.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Project"
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Batch not found."
+          }
+        }
+      }
+    },
+    "/api/projects/oneproject/{id}": {
+      "get": {
+        "summary": "Get a single project by its own ID",
+        "tags": [
+          "Projects"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The numeric ID of the project to retrieve."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A single project object.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Project"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Project not found."
+          }
+        }
+      }
+    },
+    "/api/projects/update/{id}": {
+      "patch": {
+        "summary": "Update an existing project by its ID",
+        "tags": [
+          "Projects"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the project to update."
+          }
+        ],
+        "requestBody": {
+          "description": "Fields to update for the project.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "string",
+                    "example": "Updated API Project Title"
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "Updated project description."
+                  },
+                  "deadline": {
+                    "type": "string",
+                    "format": "date-time",
+                    "example": "2025-01-10T23:59:00Z"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Project updated successfully."
+          },
+          "400": {
+            "description": "Bad request."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Project not found."
+          }
+        }
+      }
+    },
+    "/api/projects/delete/{id}": {
+      "delete": {
+        "summary": "Delete a project by its ID",
+        "tags": [
+          "Projects"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the project to delete."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project deleted successfully."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Project not found."
+          }
+        }
+      }
+    },
+    "/api/project-submissions/create": {
+      "post": {
+        "summary": "Create a new project submission",
+        "tags": [
+          "Project Submissions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "projectId",
+                  "submissionUrl"
+                ],
+                "properties": {
+                  "projectId": {
+                    "type": "integer",
+                    "description": "The ID of the project being submitted.",
+                    "example": 1
+                  },
+                  "submissionUrl": {
+                    "type": "string",
+                    "description": "The URL to the student's work (e.g., GitHub, Google Drive).",
+                    "example": "https://github.com/student/my-project-repo"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Submission created successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectSubmission"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request (e.g., missing fields or submission already exists)."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Project not found."
+          }
+        }
+      }
+    },
+    "/api/project-submissions/all": {
+      "get": {
+        "summary": "Get all submissions for the authenticated user",
+        "tags": [
+          "Project Submissions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "An array of the user's project submissions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectSubmission"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        }
+      }
+    },
+    "/api/project-submissions/allprojects": {
+      "get": {
+        "summary": "Get all project submissions from all users (Admin)",
+        "tags": [
+          "Project Submissions"
+        ],
+        "description": "Retrieves a complete list of all submissions across the system. Should be protected for admin use.",
+        "responses": {
+          "200": {
+            "description": "A comprehensive list of all project submissions.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectSubmission"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/project-submissions/update/{id}": {
+      "patch": {
+        "summary": "Update a specific project submission",
+        "tags": [
+          "Project Submissions"
+        ],
+        "description": "Allows a user to update their own submission (e.g., change the URL).",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the submission to update."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "submissionUrl": {
+                    "type": "string",
+                    "description": "The new URL for the submission.",
+                    "example": "https://github.com/student/my-updated-repo"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Submission updated successfully."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden (user trying to update another user's submission)."
+          },
+          "404": {
+            "description": "Submission not found."
+          }
+        }
+      }
+    },
+    "/api/project-submissions/delete/{id}": {
+      "delete": {
+        "summary": "Delete a project submission",
+        "tags": [
+          "Project Submissions"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the submission to delete."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Submission deleted successfully."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden."
+          },
+          "404": {
+            "description": "Submission not found."
+          }
+        }
+      }
+    },
+    "/api/project-submissions/submissions/{id}/status": {
+      "put": {
+        "summary": "Update the status of a submission (Instructor/Admin)",
+        "tags": [
+          "Project Submissions"
+        ],
+        "description": "Used by instructors or admins to grade or change the status of a submission.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the submission to update."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "status"
+                ],
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "submitted",
+                      "graded",
+                      "needs_revision",
+                      "accepted"
+                    ],
+                    "example": "graded"
+                  },
+                  "grade": {
+                    "type": "integer",
+                    "example": 92
+                  },
+                  "feedback": {
+                    "type": "string",
+                    "example": "Well done, but please add more comments to your code."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Submission status updated successfully."
+          },
+          "400": {
+            "description": "Bad request (e.g., invalid status value)."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden (e.g., a student trying to grade a submission)."
+          },
+          "404": {
+            "description": "Submission not found."
+          }
+        }
+      }
+    },
+    "/api/users/register": {
+      "post": {
+        "summary": "Register a new user",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "username",
+                  "email",
+                  "password",
+                  "role"
+                ],
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "janedoe"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "jane.doe@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "Str0ngP@ssw0rd!"
+                  },
+                  "role": {
+                    "type": "string",
+                    "enum": [
+                      "student",
+                      "instructor",
+                      "admin"
+                    ],
+                    "example": "student"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created successfully. Returns the user object and a JWT."
+          },
+          "400": {
+            "description": "Bad request (e.g., email already in use)."
+          }
+        }
+      }
+    },
+    "/api/users/login": {
+      "post": {
+        "summary": "Authenticate a user and get a JWT",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "jane.doe@example.com"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "example": "Str0ngP@ssw0rd!"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "description": "JSON Web Token for authentication."
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/User"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized, invalid credentials."
+          }
+        }
+      }
+    },
+    "/api/users/{id}": {
+      "get": {
+        "summary": "Get user details by ID",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The numeric ID of the user."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User data.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found."
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update user details",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the user to update."
+          }
+        ],
+        "requestBody": {
+          "description": "Fields to update. User can update their own info. Admin can update anyone's.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated successfully."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden (trying to update another user's info without admin rights)."
+          },
+          "404": {
+            "description": "User not found."
+          }
+        }
+      }
+    },
+    "/api/users/vis/{id}": {
+      "patch": {
+        "summary": "Update user visibility (Admin only)",
+        "tags": [
+          "Users"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "The ID of the user whose visibility to change."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "isVisible": {
+                    "type": "boolean",
+                    "description": "Set to true if the user should be visible, false otherwise."
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User visibility updated."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "403": {
+            "description": "Forbidden (not an admin)."
+          },
+          "404": {
+            "description": "User not found."
+          }
+        }
+      }
+    },
+    "/api/users/request-password-reset": {
+      "post": {
+        "summary": "Request a password reset link",
+        "tags": [
+          "Users"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email",
+                    "example": "jane.doe@example.com"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "If a user with that email exists, a reset email will be sent."
+          },
+          "404": {
+            "description": "User with that email not found."
+          }
+        }
+      }
+    },
+    "/api/users/reset-password/{token}": {
+      "post": {
+        "summary": "Reset password using a token from email",
+        "tags": [
+          "Users"
+        ],
+        "description": "This endpoint consumes the token sent via email and sets a new password. The method is POST for security.",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "The password reset token from the email link."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "password"
+                ],
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "format": "password",
+                    "description": "The new password for the user.",
+                    "example": "NewStr0ngP@ss!"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Password has been reset successfully."
+          },
+          "400": {
+            "description": "Bad request (e.g., token is invalid or expired)."
+          }
+        }
+      }
+    },
+    "/api/users/submission": {
+      "post": {
+        "summary": "Update a student's submission status (Admin/Instructor)",
+        "tags": [
+          "Users"
+        ],
+        "description": "Ambiguous route. Assuming it's for an admin/instructor to update a submission status for a student.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "studentId": {
+                    "type": "integer"
+                  },
+                  "submissionId": {
+                    "type": "integer"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Status updated."
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        }
+      }
+    },
+    "/api/users/students": {
+      "get": {
+        "summary": "Get all users with the 'student' role",
+        "tags": [
+          "Users"
+        ],
+        "description": "Retrieves a list of all students. This endpoint uses GET, which is the standard for data retrieval.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of student users.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        }
+      }
+    },
+    "/api/users/instructors": {
+      "get": {
+        "summary": "Get all users with the 'instructor' role",
+        "tags": [
+          "Users"
+        ],
+        "description": "Retrieves a list of all instructors. This endpoint uses GET, which is the standard for data retrieval.",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A list of instructor users.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/User"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Batches",
+      "description": "API for managing academic batches and groups within them."
+    },
+    {
+      "name": "Certificates",
+      "description": "API for managing student certifications."
+    },
+    {
+      "name": "Projects",
+      "description": "API for managing projects."
+    },
+    {
+      "name": "Project Submissions",
+      "description": "API for managing project submissions by students and instructors."
+    },
+    {
+      "name": "Users",
+      "description": "User management and authentication."
+    }
+  ]
+}

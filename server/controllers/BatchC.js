@@ -195,40 +195,52 @@ const addGroupToBatch = async (req, res) => {
 };
 
 
-const removeGroupFromBatch = async (req, res) => {
-  const { id } = req.params;
-  const { groupName } = req.body;
+// In controllers/BatchC.js
 
+const removeGroupFromBatch = async (req, res) => {
+
+  const { batchId, groupName } = req.params;
+
+  // Note: Consider using numbers (role === 1) instead of strings ('1') for consistency.
   if (req.user.role !== '1') {
-    return res.status(403).json({ error: 'Access denied' });
+    return res.status(403).json({ error: 'Access denied. Admin role required.' });
   }
 
   try {
-    let batch = await Batch.findOne({ where: { batchId: id } });
+    // FIX: Use findByPk (Find by Primary Key) with the 'batchId' from the URL.
+    // The old code was trying to use a variable 'id' which is not defined.
+    const batch = await Batch.findByPk(batchId);
 
-    if (batch) {
-      console.log('Groups field value:', batch.groups);
-      console.log('Groups field type:', typeof batch.groups);
-
-      let groups;
-       if (Array.isArray(batch.groups)) {
-        groups = batch.groups;
-      } else {
-          return res.status(500).json({ error: 'Groups field is not an array' });
-      }
-
-      let updatedGroups = groups.filter(group => group.groupName !== groupName);
-      batch.groups = updatedGroups;
-      batch.groupCount = updatedGroups.length;
-
-      await batch.save();
-      res.json(batch);
-    } else {
-      res.status(404).json({ message: 'Batch not found' });
+    // If the batch doesn't exist, send a 404 Not Found response.
+    if (!batch) {
+      return res.status(404).json({ message: 'Batch not found' });
     }
+
+    if (!Array.isArray(batch.groups)) {
+        return res.status(500).json({ error: 'Data inconsistency: Batch groups field is not an array' });
+    }
+
+    const initialGroupCount = batch.groups.length;
+    const updatedGroups = batch.groups.filter(group => group.groupName !== groupName);
+
+    // Check if a group was actually removed
+    if (initialGroupCount === updatedGroups.length) {
+      return res.status(404).json({ message: `Group '${groupName}' not found in this batch.` });
+    }
+    
+    // Update the instance with the new groups array and count
+    batch.groups = updatedGroups;
+    batch.groupCount = updatedGroups.length;
+
+    // Save the changes to the database
+    await batch.save();
+    
+    // Send back the updated batch object
+    res.status(200).json(batch);
+
   } catch (err) {
-    console.error('Error:', err.message);
-    res.status(500).end(err.message);
+    console.error('Error removing group from batch:', err.message);
+    res.status(500).json({ error: 'An internal server error occurred.' });
   }
 };
 
