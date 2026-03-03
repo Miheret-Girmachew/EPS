@@ -9,7 +9,7 @@ const addStudentToCertificateGroup = async (req, res) => {
       return res.status(403).json({ message: 'Only instructors can add students to certificate group' });
     }
     const student = await User.findOne({ where: { userId: studentId } });
-    if (!student) {
+    if (!student) { 
         return res.status(404).json({ message: 'student not found' });
       }
     // Create new entry
